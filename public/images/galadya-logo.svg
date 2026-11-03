@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 100" width="400" height="100">
+  <defs>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F59E0B" />
+      <stop offset="100%" stop-color="#D97706" />
+    </linearGradient>
+  </defs>
+  <g transform="translate(10, 10)">
+    <circle cx="40" cy="40" r="36" fill="none" stroke="#0F172A" stroke-width="6"/>
+    <circle cx="40" cy="40" r="24" fill="none" stroke="url(#goldGrad)" stroke-width="4"/>
+    <circle cx="40" cy="40" r="12" fill="#0F172A"/>
+    <circle cx="46" cy="34" r="3" fill="#FFFFFF"/>
+  </g>
+  <text x="100" y="45" font-family="system-ui, -apple-system, sans-serif" font-weight="800" font-size="28" letter-spacing="4" fill="#0F172A">GALADYA</text>
+  <text x="102" y="65" font-family="system-ui, -apple-system, sans-serif" font-weight="600" font-size="12" letter-spacing="6" fill="#D97706">STUDIO PHOTOPRINT</text>
+  <text x="102" y="80" font-family="system-ui, -apple-system, sans-serif" font-weight="400" font-size="9" letter-spacing="3" fill="#64748B">MANILA, PHILIPPINES</text>
+</svg>
