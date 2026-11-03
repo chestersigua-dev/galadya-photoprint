@@ -28,11 +28,11 @@
                             type="button"
                             @click="canNavigateTo(index + 1) && (currentStep = index + 1)"
                             :class="{
-                                'bg-amber-500 text-slate-950 ring-4 ring-amber-500/20 font-bold': currentStep === (index + 1),
-                                'bg-emerald-500 text-white font-semibold': currentStep > (index + 1),
-                                'bg-slate-100 text-slate-400 font-medium': currentStep < (index + 1)
+                                'bg-gradient-to-r from-purple-600 to-pink-500 text-white ring-4 ring-purple-500/20 font-bold shadow-sm': currentStep === (index + 1),
+                                'bg-purple-600 text-white font-semibold': currentStep > (index + 1),
+                                'bg-purple-50 text-purple-400 font-medium': currentStep < (index + 1)
                             }"
-                            class="w-8 h-8 rounded-xl flex items-center justify-center text-xs transition transform active:scale-95"
+                            class="w-8 h-8 rounded-xl flex items-center justify-center text-xs transition transform active:scale-95 cursor-pointer"
                             :title="stepItem.title"
                         >
                             <span x-show="currentStep <= (index + 1)" x-text="index + 1"></span>
@@ -40,10 +40,10 @@
                         </button>
                         <span 
                             class="hidden lg:inline ml-2 text-xs font-semibold"
-                            :class="currentStep === (index + 1) ? 'text-slate-900' : 'text-slate-400'"
+                            :class="currentStep === (index + 1) ? 'text-purple-950 font-bold' : 'text-slate-400'"
                             x-text="stepItem.title"
                         ></span>
-                        <div x-show="index < steps.length - 1" class="w-4 sm:w-8 h-0.5 bg-slate-200 mx-2"></div>
+                        <div x-show="index < steps.length - 1" class="w-4 sm:w-8 h-0.5 bg-purple-100 mx-2"></div>
                     </div>
                 </template>
             </div>
@@ -60,11 +60,11 @@
             <div class="lg:col-span-2 space-y-6">
                 
                 <!-- A. Client Selection Card -->
-                <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs">
+                <div class="bg-white p-6 rounded-2xl border border-purple-100 shadow-xs">
                     <div class="flex items-center justify-between mb-4">
                         <div>
                             <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
-                                <i data-lucide="user" class="w-4 h-4 text-amber-500"></i>
+                                <i data-lucide="user" class="w-4 h-4 text-purple-600"></i>
                                 <span>1. Select or Register Client</span>
                             </h2>
                             <p class="text-xs text-slate-500">Pick an existing client or register a new one on the fly.</p>
@@ -74,9 +74,9 @@
                         <button 
                             type="button" 
                             @click="showAddClientModal = true" 
-                            class="inline-flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold px-3 py-1.5 rounded-xl transition"
+                            class="inline-flex items-center gap-1.5 bg-purple-50 hover:bg-purple-100 text-purple-900 text-xs font-bold px-3 py-1.5 rounded-xl border border-purple-200 transition"
                         >
-                            <i data-lucide="user-plus" class="w-4 h-4 text-amber-600"></i>
+                            <i data-lucide="user-plus" class="w-4 h-4 text-purple-600"></i>
                             <span>+ Add New Client</span>
                         </button>
                     </div>
@@ -91,9 +91,9 @@
                                 @focus="openDropdown = true"
                                 @input="searchClients()"
                                 placeholder="Type client name e.g. Bea Alonzo or 0917..."
-                                class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:border-amber-500 focus:bg-white transition"
+                                class="w-full px-4 py-2.5 rounded-xl bg-purple-50/30 border border-purple-200 text-sm focus:outline-none focus:border-purple-500 focus:bg-white transition"
                             >
-                            <div class="absolute right-3 top-3 text-slate-400">
+                            <div class="absolute right-3 top-3 text-purple-400">
                                 <i data-lucide="search" class="w-4 h-4"></i>
                             </div>
                         </div>
@@ -102,38 +102,38 @@
                         <div 
                             x-show="openDropdown && filteredClients.length > 0" 
                             @click.outside="openDropdown = false"
-                            class="absolute z-20 left-0 right-0 mt-1 max-h-60 overflow-y-auto bg-white border border-slate-200 rounded-xl shadow-xl divide-y divide-slate-100"
+                            class="absolute z-20 left-0 right-0 mt-1 max-h-60 overflow-y-auto bg-white border border-purple-200 rounded-xl shadow-xl divide-y divide-purple-50"
                         >
                             <template x-for="c in filteredClients" :key="c.id">
                                 <div 
                                     @click="selectCustomer(c); openDropdown = false"
-                                    class="p-3 hover:bg-amber-50/60 cursor-pointer transition flex items-center justify-between"
+                                    class="p-3 hover:bg-purple-50 cursor-pointer transition flex items-center justify-between"
                                 >
                                     <div>
-                                        <p class="text-xs font-bold text-slate-900" x-text="c.full_name"></p>
+                                        <p class="text-xs font-bold text-purple-950" x-text="c.full_name"></p>
                                         <p class="text-[11px] text-slate-500" x-text="c.contact_number + (c.email ? ' * ' + c.email : '')"></p>
                                     </div>
-                                    <span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-medium" x-text="(c.total_sessions_count || 0) + ' sessions'"></span>
+                                    <span class="text-[10px] bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full font-bold" x-text="(c.total_sessions_count || 0) + ' sessions'"></span>
                                 </div>
                             </template>
                         </div>
                     </div>
 
                     <!-- Active Selected Customer Pill -->
-                    <div x-show="selectedCustomer" class="mt-4 p-4 rounded-xl bg-amber-50/80 border border-amber-200 flex items-center justify-between">
+                    <div x-show="selectedCustomer" class="mt-4 p-4 rounded-xl bg-purple-50 border border-purple-200 flex items-center justify-between">
                         <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-full bg-amber-500 text-slate-950 font-bold flex items-center justify-center text-sm shadow-sm">
+                            <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-purple-600 to-pink-500 text-white font-bold flex items-center justify-center text-sm shadow-sm">
                                 <span x-text="selectedCustomer ? selectedCustomer.full_name.charAt(0) : '?'"></span>
                             </div>
                             <div>
-                                <p class="text-sm font-bold text-slate-900" x-text="selectedCustomer?.full_name"></p>
-                                <p class="text-xs text-slate-600" x-text="selectedCustomer?.contact_number + (selectedCustomer?.email ? ' * ' + selectedCustomer?.email : '')"></p>
+                                <p class="text-sm font-bold text-purple-950" x-text="selectedCustomer?.full_name"></p>
+                                <p class="text-xs text-purple-700" x-text="selectedCustomer?.contact_number + (selectedCustomer?.email ? ' * ' + selectedCustomer?.email : '')"></p>
                             </div>
                         </div>
                         <button 
                             type="button" 
                             @click="selectedCustomer = null; clientQuery = ''" 
-                            class="text-xs text-rose-600 hover:text-rose-800 font-semibold px-2 py-1"
+                            class="text-xs text-pink-600 hover:text-pink-800 font-bold px-2 py-1"
                         >
                             Change
                         </button>
@@ -141,9 +141,9 @@
                 </div>
 
                 <!-- B. Package Selection Radio Grid -->
-                <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs">
+                <div class="bg-white p-6 rounded-2xl border border-purple-100 shadow-xs">
                     <h2 class="text-base font-bold text-slate-900 mb-1 flex items-center gap-2">
-                        <i data-lucide="package" class="w-4 h-4 text-amber-500"></i>
+                        <i data-lucide="package" class="w-4 h-4 text-purple-600"></i>
                         <span>2. Choose Self Shoot Package</span>
                     </h2>
                     <p class="text-xs text-slate-500 mb-4">Select the studio duration and pax tier for this shoot.</p>
@@ -152,7 +152,7 @@
                         <template x-for="pkg in packages" :key="pkg.id">
                             <label 
                                 class="p-4 rounded-2xl border-2 cursor-pointer transition relative flex flex-col justify-between"
-                                :class="selectedPackageId === pkg.id ? 'border-amber-500 bg-amber-50/40 shadow-sm' : 'border-slate-200 hover:border-slate-300 bg-white'"
+                                :class="selectedPackageId === pkg.id ? 'border-purple-600 bg-purple-50/50 ring-2 ring-purple-500/20 shadow-sm' : 'border-purple-100 hover:border-purple-300 bg-white'"
                             >
                                 <input 
                                     type="radio" 
@@ -164,13 +164,13 @@
                                 <div>
                                     <div class="flex items-center justify-between mb-1">
                                         <h3 class="text-sm font-bold text-slate-900" x-text="pkg.title"></h3>
-                                        <span class="text-sm font-black text-amber-600" x-text="'₱' + parseFloat(pkg.base_price).toFixed(2)"></span>
+                                        <span class="text-sm font-black text-purple-700" x-text="'₱' + parseFloat(pkg.base_price).toFixed(2)"></span>
                                     </div>
                                     <p class="text-xs text-slate-500 line-clamp-2" x-text="pkg.description"></p>
                                 </div>
-                                <div class="mt-3 flex items-center justify-between pt-2 border-t border-slate-100 text-[11px] text-slate-400">
+                                <div class="mt-3 flex items-center justify-between pt-2 border-t border-purple-100 text-[11px] text-slate-400">
                                     <span>Includes Dual Photostrip + Solo 4R</span>
-                                    <i x-show="selectedPackageId === pkg.id" data-lucide="check-circle-2" class="w-4 h-4 text-amber-600"></i>
+                                    <i x-show="selectedPackageId === pkg.id" data-lucide="check-circle-2" class="w-4 h-4 text-purple-600"></i>
                                 </div>
                             </label>
                         </template>
@@ -178,9 +178,9 @@
                 </div>
 
                 <!-- C. Real-Time Add-ons Checkboxes & Counters -->
-                <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs">
+                <div class="bg-white p-6 rounded-2xl border border-purple-100 shadow-xs">
                     <h2 class="text-base font-bold text-slate-900 mb-1 flex items-center gap-2">
-                        <i data-lucide="plus-circle" class="w-4 h-4 text-amber-500"></i>
+                        <i data-lucide="plus-circle" class="w-4 h-4 text-pink-500"></i>
                         <span>3. Optional Session Add-ons</span>
                     </h2>
                     <p class="text-xs text-slate-500 mb-4">Add extra shooting time, photographer assistance, pax, or pets.</p>
@@ -188,34 +188,34 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <template x-for="addon in addons" :key="addon.id">
                             <div 
-                                class="p-3.5 rounded-xl border border-slate-200 flex items-center justify-between transition"
-                                :class="isAddonSelected(addon.id) ? 'bg-amber-50/50 border-amber-300' : 'bg-slate-50/50'"
+                                class="p-3.5 rounded-xl border flex items-center justify-between transition"
+                                :class="isAddonSelected(addon.id) ? 'bg-pink-50/60 border-pink-300 ring-1 ring-pink-400/30' : 'bg-purple-50/30 border-purple-100'"
                             >
                                 <label class="flex items-center gap-3 cursor-pointer flex-1">
                                     <input 
                                         type="checkbox" 
                                         :checked="isAddonSelected(addon.id)"
                                         @change="toggleAddon(addon.id)"
-                                        class="w-4 h-4 rounded text-amber-500 border-slate-300 focus:ring-amber-400"
+                                        class="w-4 h-4 rounded text-pink-600 border-purple-300 focus:ring-pink-400"
                                     >
                                     <div>
                                         <p class="text-xs font-bold text-slate-900" x-text="addon.title"></p>
-                                        <p class="text-[11px] font-semibold text-amber-600" x-text="'₱' + parseFloat(addon.price).toFixed(2)"></p>
+                                        <p class="text-[11px] font-bold text-pink-600" x-text="'₱' + parseFloat(addon.price).toFixed(2)"></p>
                                     </div>
                                 </label>
 
                                 <!-- Qty Counter -->
-                                <div x-show="isAddonSelected(addon.id)" class="flex items-center gap-1 bg-white border border-slate-200 rounded-lg p-0.5">
+                                <div x-show="isAddonSelected(addon.id)" class="flex items-center gap-1 bg-white border border-pink-200 rounded-lg p-0.5">
                                     <button 
                                         type="button" 
                                         @click="decreaseAddonQty(addon.id)"
-                                        class="w-6 h-6 rounded flex items-center justify-center text-slate-600 hover:bg-slate-100 text-xs font-bold"
+                                        class="w-6 h-6 rounded flex items-center justify-center text-slate-600 hover:bg-pink-50 text-xs font-bold"
                                     >-</button>
-                                    <span class="w-6 text-center text-xs font-bold text-slate-900" x-text="getAddonQty(addon.id)"></span>
+                                    <span class="w-6 text-center text-xs font-bold text-purple-950" x-text="getAddonQty(addon.id)"></span>
                                     <button 
                                         type="button" 
                                         @click="increaseAddonQty(addon.id)"
-                                        class="w-6 h-6 rounded flex items-center justify-center text-slate-600 hover:bg-slate-100 text-xs font-bold"
+                                        class="w-6 h-6 rounded flex items-center justify-center text-slate-600 hover:bg-pink-50 text-xs font-bold"
                                     >+</button>
                                 </div>
                             </div>
@@ -227,48 +227,50 @@
 
             <!-- Right Col: Live Summary & Navigation -->
             <div class="space-y-6">
-                <div class="bg-slate-900 text-white p-6 rounded-2xl shadow-xl sticky top-24 border border-slate-800">
-                    <span class="text-[10px] font-bold text-amber-400 uppercase tracking-widest">Running Session Total</span>
-                    <h3 class="text-lg font-bold text-white mt-1 mb-4">Calculation Summary</h3>
+                <div class="bg-gradient-to-br from-[#1c053a] via-[#2d0856] to-[#140228] text-white p-6 rounded-2xl shadow-xl sticky top-24 border border-purple-800/60 relative overflow-hidden">
+                    <div class="absolute -right-8 -top-8 w-32 h-32 bg-pink-500/20 rounded-full blur-2xl pointer-events-none"></div>
 
-                    <div class="space-y-3 text-xs border-b border-slate-800 pb-4">
-                        <div class="flex items-center justify-between text-slate-300">
+                    <span class="text-[10px] font-extrabold text-yellow-300 uppercase tracking-widest">Running Session Total</span>
+                    <h3 class="text-lg font-black text-white mt-1 mb-4">Calculation Summary</h3>
+
+                    <div class="space-y-3 text-xs border-b border-purple-800/80 pb-4">
+                        <div class="flex items-center justify-between text-purple-200">
                             <span>Selected Client:</span>
-                            <span class="font-semibold text-white" x-text="selectedCustomer ? selectedCustomer.full_name : 'None selected'"></span>
+                            <span class="font-bold text-white" x-text="selectedCustomer ? selectedCustomer.full_name : 'None selected'"></span>
                         </div>
 
-                        <div class="flex items-center justify-between text-slate-300">
+                        <div class="flex items-center justify-between text-purple-200">
                             <span>Base Package:</span>
-                            <span class="font-semibold text-white" x-text="getSelectedPackage() ? getSelectedPackage().title : 'None'"></span>
+                            <span class="font-bold text-white" x-text="getSelectedPackage() ? getSelectedPackage().title : 'None'"></span>
                         </div>
-                        <div class="flex items-center justify-between text-slate-400 pl-2">
+                        <div class="flex items-center justify-between text-purple-300 pl-2">
                             <span>Package Price:</span>
                             <span class="font-mono" x-text="'₱' + getPackagePrice().toFixed(2)"></span>
                         </div>
 
-                        <div class="flex items-center justify-between text-slate-300">
+                        <div class="flex items-center justify-between text-purple-200">
                             <span>Add-ons Total:</span>
-                            <span class="font-mono text-amber-400 font-semibold" x-text="'₱' + getAddonsTotal().toFixed(2)"></span>
+                            <span class="font-mono text-yellow-300 font-bold" x-text="'₱' + getAddonsTotal().toFixed(2)"></span>
                         </div>
                     </div>
 
                     <div class="pt-4 flex items-center justify-between">
-                        <span class="text-xs uppercase tracking-wider text-slate-400 font-semibold">Running Total</span>
-                        <span class="text-2xl font-black text-amber-400" x-text="'₱' + getGrandTotal().toFixed(2)"></span>
+                        <span class="text-xs uppercase tracking-wider text-purple-300 font-bold">Running Total</span>
+                        <span class="text-2xl font-black text-yellow-300" x-text="'₱' + getGrandTotal().toFixed(2)"></span>
                     </div>
 
                     <button 
                         type="button" 
                         @click="proceedToStep2()"
                         :disabled="!selectedCustomer || !selectedPackageId"
-                        :class="(!selectedCustomer || !selectedPackageId) ? 'opacity-50 cursor-not-allowed bg-slate-700 text-slate-400' : 'bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 shadow-lg shadow-amber-500/20'"
-                        class="w-full mt-6 py-3 px-4 rounded-xl font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition cursor-pointer"
+                        :class="(!selectedCustomer || !selectedPackageId) ? 'opacity-50 cursor-not-allowed bg-purple-950 text-purple-400' : 'bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-600 hover:opacity-95 text-white shadow-lg shadow-purple-950'"
+                        class="w-full mt-6 py-3 px-4 rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition cursor-pointer"
                     >
                         <span>Proceed to Image Ingestion</span>
                         <i data-lucide="arrow-right" class="w-4 h-4"></i>
                     </button>
                     
-                    <p x-show="!selectedCustomer || !selectedPackageId" class="text-[11px] text-amber-400 text-center mt-2">
+                    <p x-show="!selectedCustomer || !selectedPackageId" class="text-[11px] text-yellow-300/90 text-center mt-2">
                         * Please select a client and package to continue.
                     </p>
                 </div>
@@ -283,15 +285,15 @@
     <div x-show="currentStep === 2 || currentStep === 3" x-transition.opacity.duration.300ms class="space-y-6">
         
         <!-- Sticky Top Bar Monitor (Requirement 3.D Step 3) -->
-        <div class="sticky top-16 z-30 bg-slate-900/95 backdrop-blur-md text-white px-5 py-3.5 rounded-2xl shadow-xl border border-slate-800 flex flex-wrap items-center justify-between gap-4">
+        <div class="sticky top-16 z-30 bg-[#1c053a]/95 backdrop-blur-md text-white px-5 py-3.5 rounded-2xl shadow-xl border border-purple-900/80 flex flex-wrap items-center justify-between gap-4">
             <div class="flex items-center gap-4">
                 <!-- Selected Count Badge with Color Switch Rule -->
                 <div class="flex items-center gap-2">
-                    <span class="text-xs text-slate-400 font-medium">Photostrip Pool:</span>
+                    <span class="text-xs text-purple-200 font-semibold">Photostrip Pool:</span>
                     <span 
                         class="px-3 py-1 rounded-xl text-xs font-black tracking-wider transition-all"
                         :class="{
-                            'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40': starredCount <= maxLimit,
+                            'bg-yellow-400 text-purple-950 font-black ring-2 ring-yellow-400/40': starredCount <= maxLimit,
                             'bg-rose-600 text-white ring-4 ring-rose-500/30 animate-pulse font-black': starredCount > maxLimit
                         }"
                     >
@@ -300,16 +302,16 @@
                 </div>
 
                 <!-- Favorite Pick Indicator -->
-                <div class="flex items-center gap-2 border-l border-slate-700 pl-4">
-                    <span class="text-xs text-slate-400 font-medium">Solo 4R Favorite:</span>
+                <div class="flex items-center gap-2 border-l border-purple-800/80 pl-4">
+                    <span class="text-xs text-purple-200 font-semibold">Solo 4R Favorite:</span>
                     <template x-if="favoritePhoto">
-                        <span class="inline-flex items-center gap-1 text-xs font-bold text-rose-400 bg-rose-500/20 px-2.5 py-0.5 rounded-lg border border-rose-500/40 truncate max-w-[160px]">
-                            <i data-lucide="heart" class="w-3.5 h-3.5 fill-rose-500 text-rose-500"></i>
+                        <span class="inline-flex items-center gap-1 text-xs font-bold text-pink-300 bg-pink-500/20 px-2.5 py-0.5 rounded-lg border border-pink-500/40 truncate max-w-[160px]">
+                            <i data-lucide="heart" class="w-3.5 h-3.5 fill-pink-500 text-pink-500"></i>
                             <span x-text="favoritePhoto.original_filename"></span>
                         </span>
                     </template>
                     <template x-if="!favoritePhoto">
-                        <span class="text-xs text-amber-400 font-medium italic">Click ♥ on any photo</span>
+                        <span class="text-xs text-yellow-300 font-medium italic">Click ♥ on any photo</span>
                     </template>
                 </div>
             </div>
@@ -319,7 +321,7 @@
                 <button 
                     type="button" 
                     @click="selectFirstTen()"
-                    class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium transition"
+                    class="px-3 py-1.5 rounded-xl bg-purple-900/70 hover:bg-purple-800 text-purple-100 border border-purple-700/60 text-xs font-bold transition cursor-pointer"
                     title="Quick select the first 10 photos"
                 >
                     Select First 10
@@ -327,15 +329,25 @@
                 <button 
                     type="button" 
                     @click="clearAllStarred()"
-                    class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium transition"
+                    class="px-3 py-1.5 rounded-xl bg-purple-900/70 hover:bg-purple-800 text-purple-100 border border-purple-700/60 text-xs font-bold transition cursor-pointer"
                 >
                     Clear Starred
                 </button>
                 <button 
                     type="button" 
+                    x-show="photos.length > 0"
+                    @click="clearAllPhotos()"
+                    class="px-3 py-1.5 rounded-xl bg-rose-950/80 hover:bg-rose-900 text-rose-200 border border-rose-800 text-xs font-bold transition flex items-center gap-1 cursor-pointer"
+                    title="Clear all ingested images"
+                >
+                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    <span>Clear All</span>
+                </button>
+                <button 
+                    type="button" 
                     @click="proceedToStep4()"
                     :disabled="starredCount === 0 || !favoritePhoto"
-                    :class="(starredCount === 0 || !favoritePhoto) ? 'opacity-50 cursor-not-allowed bg-slate-700 text-slate-400' : 'bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 text-slate-950 font-bold shadow-md shadow-amber-500/20'"
+                    :class="(starredCount === 0 || !favoritePhoto) ? 'opacity-50 cursor-not-allowed bg-purple-950 text-purple-400' : 'bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-600 hover:opacity-95 text-white font-black shadow-md shadow-purple-950'"
                     class="px-4 py-1.5 rounded-xl text-xs uppercase tracking-wider flex items-center gap-1.5 transition cursor-pointer"
                 >
                     <span>Preview 4R Prints</span>
@@ -354,7 +366,7 @@
         </div>
 
         <!-- Drag-and-Drop Ingestion Area (RAW & Standard Support) -->
-        <div class="bg-white p-6 rounded-2xl border-2 border-dashed border-slate-300 hover:border-amber-500 transition relative overflow-hidden group">
+        <div class="bg-purple-50/30 p-6 rounded-2xl border-2 border-dashed border-purple-200 hover:border-pink-500 transition relative overflow-hidden group">
             <input 
                 type="file" 
                 multiple
@@ -363,45 +375,258 @@
                 class="absolute inset-0 opacity-0 cursor-pointer z-10"
             >
             <div class="flex flex-col items-center justify-center text-center py-6">
-                <div class="w-14 h-14 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mb-3 group-hover:scale-110 transition">
+                <div class="w-14 h-14 rounded-2xl bg-purple-100 text-purple-700 flex items-center justify-center mb-3 group-hover:scale-110 transition shadow-xs">
                     <i data-lucide="upload-cloud" class="w-7 h-7"></i>
                 </div>
-                <h3 class="text-sm font-bold text-slate-800">Drag & Drop Camera RAW or Standard Images</h3>
+                <h3 class="text-sm font-black text-purple-950">Drag & Drop Camera RAW or Standard Images</h3>
                 <p class="text-xs text-slate-500 max-w-md mt-1">
-                    Supports <span class="font-bold text-slate-700">Canon (.CR2, .CR3), Nikon (.NEF), Sony (.ARW), Adobe (.DNG), .JPG, .PNG</span>. Auto-extracts embedded high-res JPEGs with zero lag.
+                    Supports <span class="font-bold text-purple-900">Canon (.CR2, .CR3), Nikon (.NEF), Sony (.ARW), Adobe (.DNG), .JPG, .PNG</span>. Auto-extracts embedded high-res JPEGs with zero lag.
                 </p>
 
                 <!-- Upload Progress Indicator -->
                 <div x-show="isUploading" class="w-full max-w-xs mt-4">
-                    <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
-                        <div class="bg-amber-500 h-2 rounded-full transition-all duration-300" :style="'width: ' + uploadProgress + '%'"></div>
+                    <div class="w-full bg-purple-100 rounded-full h-2 overflow-hidden">
+                        <div class="bg-gradient-to-r from-yellow-400 to-pink-500 h-2 rounded-full transition-all duration-300" :style="'width: ' + uploadProgress + '%'"></div>
                     </div>
-                    <span class="text-[11px] font-semibold text-slate-600 mt-1 block" x-text="'Processing ' + uploadProgress + '%...'"></span>
+                    <span class="text-[11px] font-bold text-purple-700 mt-1 block" x-text="'Processing ' + uploadProgress + '%...'"></span>
                 </div>
+            </div>
+        </div>
+
+        <!-- ========================================================================= -->
+        <!-- DUAL PHOTOSTRIP INGEST SPLIT BOARD (First 5 Left, Second 5 Right) -->
+        <!-- ========================================================================= -->
+        <div class="bg-white p-5 rounded-2xl border border-purple-100 shadow-xs space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-purple-50">
+                <div>
+                    <h3 class="text-sm font-black text-purple-950 flex items-center gap-2">
+                        <i data-lucide="columns-2" class="w-4 h-4 text-purple-600"></i>
+                        <span>Dual Photostrip Real-Time Layout (10 4R Slots)</span>
+                    </h3>
+                    <p class="text-xs text-slate-500">
+                        First 5 photos are mapped to the <strong class="text-purple-700">Left Strip</strong>; second 5 photos are mapped to the <strong class="text-yellow-700">Right Strip</strong>.
+                    </p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold bg-purple-50 text-purple-700 border border-purple-200">
+                        <span class="w-2 h-2 rounded-full bg-purple-600"></span>
+                        <span x-text="'Left Strip: ' + Math.min(starredCount, 5) + ' / 5'"></span>
+                    </span>
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold bg-yellow-50 text-yellow-800 border border-yellow-200">
+                        <span class="w-2 h-2 rounded-full bg-yellow-500"></span>
+                        <span x-text="'Right Strip: ' + (starredCount > 5 ? Math.min(starredCount - 5, 5) : 0) + ' / 5'"></span>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Two-part Photostrip Board -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 relative">
+                
+                <!-- Left Part: Photostrip Column 1 (Photos 1 to 5) -->
+                <div class="bg-gradient-to-b from-purple-50/70 via-purple-50/30 to-white p-4 rounded-xl border-2 border-purple-300/80 shadow-xs flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-3 pb-2 border-b border-purple-100">
+                            <div class="flex items-center gap-2">
+                                <span class="w-6 h-6 rounded-lg bg-purple-700 text-white font-black text-xs flex items-center justify-center shadow-xs">L</span>
+                                <div>
+                                    <h4 class="text-xs font-black text-purple-950">Left Part: Strip 1 (Photos 1 – 5)</h4>
+                                    <p class="text-[10px] text-purple-700">First 5 selected photos printed on left photostrip column</p>
+                                </div>
+                            </div>
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-purple-100 text-purple-800" x-text="Math.min(starredCount, 5) + '/5 Slots'"></span>
+                        </div>
+
+                        <!-- 5 Slots for Left Part -->
+                        <div class="grid grid-cols-5 gap-2">
+                            <template x-for="slot in getLeftStripSlots()" :key="'left-' + slot.slotNumber">
+                                <div class="flex flex-col">
+                                    <div 
+                                        class="aspect-[3/4] rounded-xl border-2 relative overflow-hidden transition group"
+                                        :class="slot.photo ? (slot.photo.is_favorite ? 'border-pink-500 ring-2 ring-pink-500/40 bg-slate-950' : 'border-purple-400 bg-slate-950') : 'border-dashed border-purple-200 bg-purple-50/40 flex flex-col items-center justify-center text-center p-1'"
+                                    >
+                                        <!-- Photo Assigned -->
+                                        <template x-if="slot.photo">
+                                            <div class="w-full h-full relative">
+                                                <img :src="slot.photo.preview_url" class="w-full h-full object-cover">
+                                                <!-- Slot Badge -->
+                                                <span class="absolute top-1 left-1 bg-purple-700/90 backdrop-blur-xs text-white text-[9px] font-bold px-1.5 py-0.2 rounded shadow-xs" x-text="'#' + slot.slotNumber"></span>
+                                                <!-- Solo 4R Heart Badge -->
+                                                <div x-show="slot.photo.is_favorite" class="absolute bottom-1 left-1">
+                                                    <span class="w-4 h-4 rounded-full bg-pink-600 text-white flex items-center justify-center shadow-xs text-[9px]">♥</span>
+                                                </div>
+                                                <!-- Action Overlay on Hover -->
+                                                <div class="absolute inset-0 bg-slate-950/70 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-1 p-1">
+                                                    <button 
+                                                        type="button" 
+                                                        @click.stop="moveSlotEarlier(slot.photo)"
+                                                        class="w-5 h-5 rounded bg-white/90 text-purple-900 hover:bg-purple-600 hover:text-white flex items-center justify-center text-[10px] transition cursor-pointer"
+                                                        title="Move up / earlier"
+                                                    >◀</button>
+                                                    <button 
+                                                        type="button" 
+                                                        @click.stop="setFavorite(slot.photo)" 
+                                                        class="w-5 h-5 rounded bg-white/90 text-pink-600 hover:bg-pink-500 hover:text-white flex items-center justify-center text-[10px] transition cursor-pointer"
+                                                        title="Set Solo 4R Favorite"
+                                                    >♥</button>
+                                                    <button 
+                                                        type="button" 
+                                                        @click.stop="moveSlotLater(slot.photo)"
+                                                        class="w-5 h-5 rounded bg-white/90 text-purple-900 hover:bg-purple-600 hover:text-white flex items-center justify-center text-[10px] transition cursor-pointer"
+                                                        title="Move down / later"
+                                                    >▶</button>
+                                                    <button 
+                                                        type="button" 
+                                                        @click.stop="toggleStar(slot.photo)" 
+                                                        class="w-5 h-5 rounded bg-white/90 text-slate-700 hover:bg-rose-600 hover:text-white flex items-center justify-center text-[10px] transition cursor-pointer"
+                                                        title="Remove from strip"
+                                                    >✕</button>
+                                                </div>
+                                            </div>
+                                        </template>
+
+                                        <!-- Empty Slot Placeholder -->
+                                        <template x-if="!slot.photo">
+                                            <div class="flex flex-col items-center justify-center text-center p-1 w-full h-full">
+                                                <span class="text-[11px] font-bold text-purple-600" x-text="'#' + slot.slotNumber"></span>
+                                                <span class="text-[9px] text-purple-400 mt-0.5">Empty</span>
+                                            </div>
+                                        </template>
+                                    </div>
+                                    <span class="text-[9px] text-slate-500 truncate text-center mt-1" x-text="slot.photo ? slot.photo.original_filename : 'Slot ' + slot.slotNumber"></span>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Footer Branding Mock for Left Strip (Authentic Logo) -->
+                    <div class="mt-3 pt-2 border-t border-purple-100 flex items-center justify-between text-[10px] text-slate-500">
+                        <img src="{{ asset('images/logo 1.png') }}" alt="Galadya" class="h-6 w-auto object-contain">
+                        <span class="text-purple-600 font-mono text-[9px] font-bold">Col 1 Footer</span>
+                    </div>
+                </div>
+
+                <!-- Right Part: Photostrip Column 2 (Photos 6 to 10) -->
+                <div class="bg-gradient-to-b from-yellow-50/70 via-yellow-50/30 to-white p-4 rounded-xl border-2 border-yellow-300/80 shadow-xs flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-3 pb-2 border-b border-yellow-100">
+                            <div class="flex items-center gap-2">
+                                <span class="w-6 h-6 rounded-lg bg-yellow-400 text-purple-950 font-black text-xs flex items-center justify-center shadow-xs">R</span>
+                                <div>
+                                    <h4 class="text-xs font-black text-purple-950">Right Part: Strip 2 (Photos 6 – 10)</h4>
+                                    <p class="text-[10px] text-yellow-700 font-semibold">Second 5 selected photos printed on right photostrip column</p>
+                                </div>
+                            </div>
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-yellow-100 text-yellow-900" x-text="(starredCount > 5 ? Math.min(starredCount - 5, 5) : 0) + '/5 Slots'"></span>
+                        </div>
+
+                        <!-- 5 Slots for Right Part -->
+                        <div class="grid grid-cols-5 gap-2">
+                            <template x-for="slot in getRightStripSlots()" :key="'right-' + slot.slotNumber">
+                                <div class="flex flex-col">
+                                    <div 
+                                        class="aspect-[3/4] rounded-xl border-2 relative overflow-hidden transition group"
+                                        :class="slot.photo ? (slot.photo.is_favorite ? 'border-pink-500 ring-2 ring-pink-500/40 bg-slate-950' : 'border-yellow-400 bg-slate-950') : 'border-dashed border-yellow-200 bg-yellow-50/40 flex flex-col items-center justify-center text-center p-1'"
+                                    >
+                                        <!-- Photo Assigned -->
+                                        <template x-if="slot.photo">
+                                            <div class="w-full h-full relative">
+                                                <img :src="slot.photo.preview_url" class="w-full h-full object-cover">
+                                                <!-- Slot Badge -->
+                                                <span class="absolute top-1 left-1 bg-yellow-400 text-purple-950 text-[9px] font-black px-1.5 py-0.2 rounded shadow-xs" x-text="'#' + slot.slotNumber"></span>
+                                                <!-- Solo 4R Heart Badge -->
+                                                <div x-show="slot.photo.is_favorite" class="absolute bottom-1 left-1">
+                                                    <span class="w-4 h-4 rounded-full bg-pink-600 text-white flex items-center justify-center shadow-xs text-[9px]">♥</span>
+                                                </div>
+                                                <!-- Action Overlay on Hover -->
+                                                <div class="absolute inset-0 bg-slate-950/70 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-1 p-1">
+                                                    <button 
+                                                        type="button" 
+                                                        @click.stop="moveSlotEarlier(slot.photo)"
+                                                        class="w-5 h-5 rounded bg-white/90 text-purple-900 hover:bg-yellow-400 hover:text-purple-950 flex items-center justify-center text-[10px] transition cursor-pointer"
+                                                        title="Move up / earlier"
+                                                    >◀</button>
+                                                    <button 
+                                                        type="button" 
+                                                        @click.stop="setFavorite(slot.photo)" 
+                                                        class="w-5 h-5 rounded bg-white/90 text-pink-600 hover:bg-pink-500 hover:text-white flex items-center justify-center text-[10px] transition cursor-pointer"
+                                                        title="Set Solo 4R Favorite"
+                                                    >♥</button>
+                                                    <button 
+                                                        type="button" 
+                                                        @click.stop="moveSlotLater(slot.photo)"
+                                                        class="w-5 h-5 rounded bg-white/90 text-purple-900 hover:bg-yellow-400 hover:text-purple-950 flex items-center justify-center text-[10px] transition cursor-pointer"
+                                                        title="Move down / later"
+                                                    >▶</button>
+                                                    <button 
+                                                        type="button" 
+                                                        @click.stop="toggleStar(slot.photo)" 
+                                                        class="w-5 h-5 rounded bg-white/90 text-slate-700 hover:bg-rose-600 hover:text-white flex items-center justify-center text-[10px] transition cursor-pointer"
+                                                        title="Remove from strip"
+                                                    >✕</button>
+                                                </div>
+                                            </div>
+                                        </template>
+
+                                        <!-- Empty Slot Placeholder -->
+                                        <template x-if="!slot.photo">
+                                            <div class="flex flex-col items-center justify-center text-center p-1 w-full h-full">
+                                                <span class="text-[11px] font-bold text-yellow-600" x-text="'#' + slot.slotNumber"></span>
+                                                <span class="text-[9px] text-yellow-500 mt-0.5">Empty</span>
+                                            </div>
+                                        </template>
+                                    </div>
+                                    <span class="text-[9px] text-slate-500 truncate text-center mt-1" x-text="slot.photo ? slot.photo.original_filename : 'Slot ' + slot.slotNumber"></span>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Footer Branding Mock for Right Strip (Authentic Logo) -->
+                    <div class="mt-3 pt-2 border-t border-yellow-100 flex items-center justify-between text-[10px] text-slate-500">
+                        <img src="{{ asset('images/logo 1.png') }}" alt="Galadya" class="h-6 w-auto object-contain">
+                        <span class="text-yellow-700 font-mono text-[9px] font-bold">Col 2 Footer</span>
+                    </div>
+                </div>
+
             </div>
         </div>
 
         <!-- Ingested Photos Grid Presentation -->
         <div>
-            <div class="flex items-center justify-between mb-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
                 <div>
-                    <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
-                        <i data-lucide="image" class="w-4 h-4 text-amber-500"></i>
+                    <h3 class="text-base font-black text-purple-950 flex items-center gap-2">
+                        <i data-lucide="image" class="w-4 h-4 text-purple-600"></i>
                         <span>Ingested Photos (<span x-text="photos.length"></span>)</span>
                     </h3>
-                    <p class="text-xs text-slate-500">Click ★ to add to 10-photo strip pool. Click ♥ for the single favorite 4R print.</p>
+                    <p class="text-xs text-slate-500">Click ★ to add to 10-photo strip pool. First 5 go to Left Strip; next 5 go to Right Strip. Click ♥ for the single favorite 4R print.</p>
                 </div>
 
-                <div class="flex items-center gap-2 text-xs text-slate-500">
-                    <span class="inline-flex items-center gap-1"><span class="w-3 h-3 rounded bg-amber-400 inline-block"></span> Starred (Strip)</span>
-                    <span class="inline-flex items-center gap-1 ml-3"><span class="w-3 h-3 rounded bg-rose-500 inline-block"></span> Favorite (Solo 4R)</span>
+                <div class="flex items-center gap-3 flex-wrap">
+                    <div class="hidden sm:flex items-center gap-2 text-xs text-slate-500 mr-1">
+                        <span class="inline-flex items-center gap-1"><span class="w-3 h-3 rounded bg-purple-600 inline-block"></span> Left Strip (#1–5)</span>
+                        <span class="inline-flex items-center gap-1 ml-2"><span class="w-3 h-3 rounded bg-yellow-400 inline-block"></span> Right Strip (#6–10)</span>
+                        <span class="inline-flex items-center gap-1 ml-2"><span class="w-3 h-3 rounded bg-pink-500 inline-block"></span> Favorite (Solo 4R)</span>
+                    </div>
+
+                    <!-- Clear All Ingested Photos Button -->
+                    <button 
+                        type="button" 
+                        x-show="photos.length > 0"
+                        @click="clearAllPhotos()"
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold transition cursor-pointer shadow-xs"
+                        title="Remove all ingested photos and reset selection"
+                    >
+                        <i data-lucide="trash-2" class="w-3.5 h-3.5 text-rose-600"></i>
+                        <span>Clear All Photos</span>
+                    </button>
                 </div>
             </div>
 
             <!-- Empty State -->
-            <div x-show="photos.length === 0" class="bg-white rounded-2xl border border-slate-200 p-12 text-center text-slate-400">
-                <i data-lucide="camera-off" class="w-10 h-10 mx-auto text-slate-300 mb-2"></i>
-                <p class="text-sm font-semibold">No photos ingested yet.</p>
+            <div x-show="photos.length === 0" class="bg-white rounded-2xl border border-purple-100 p-12 text-center text-slate-400">
+                <i data-lucide="camera-off" class="w-10 h-10 mx-auto text-purple-300 mb-2"></i>
+                <p class="text-sm font-bold text-purple-950">No photos ingested yet.</p>
                 <p class="text-xs">Drag and drop photos from the camera SD card above to begin interactive selection.</p>
             </div>
 
@@ -411,9 +636,10 @@
                     <div 
                         class="bg-white rounded-2xl border-2 overflow-hidden shadow-xs relative group transition-all"
                         :class="{
-                            'border-amber-400 ring-2 ring-amber-400/30': photo.is_starred && !photo.is_favorite,
-                            'border-rose-500 ring-4 ring-rose-500/40': photo.is_favorite,
-                            'border-slate-200 hover:border-slate-300': !photo.is_starred && !photo.is_favorite
+                            'border-purple-600 ring-2 ring-purple-600/30': getPhotoSlotInfo(photo)?.strip === 'left' && !photo.is_favorite,
+                            'border-yellow-400 ring-2 ring-yellow-400/30': getPhotoSlotInfo(photo)?.strip === 'right' && !photo.is_favorite,
+                            'border-pink-500 ring-4 ring-pink-500/40': photo.is_favorite,
+                            'border-purple-100 hover:border-purple-300': !photo.is_starred && !photo.is_favorite
                         }"
                     >
                         <!-- Thumbnail Image Container -->
@@ -441,12 +667,118 @@
                                 </span>
                             </div>
 
-                            <!-- Star Flag Selection Badge (if starred) -->
-                            <div x-show="photo.is_starred" class="absolute top-2 right-2">
-                                <span class="w-6 h-6 rounded-full bg-amber-500 text-slate-950 font-black text-xs flex items-center justify-center shadow-md">
-                                    ★
+                            <!-- Strip Slot Badge (Left Strip #1..5, Right Strip #6..10, or Queue) -->
+                            <template x-if="getPhotoSlotInfo(photo)">
+                                <div class="absolute top-2 right-2 flex items-center gap-1 z-10">
+                                    <span 
+                                        class="text-[9px] px-2 py-0.5 rounded-full shadow-md font-bold"
+                                        :class="getPhotoSlotInfo(photo).badgeClass"
+                                        x-text="getPhotoSlotInfo(photo).label"
+                                    ></span>
+                                </div>
+                            </template>
+
+                            <!-- Favorite Glowing Heart Badge (if favorite) -->
+                            <div x-show="photo.is_favorite" class="absolute bottom-2 left-2">
+                                <span class="px-2 py-0.5 rounded-full bg-pink-600 text-white font-bold text-[10px] flex items-center gap-1 shadow-md">
+                                    <i data-lucide="heart" class="w-3 h-3 fill-white text-white"></i>
+                                    <span>Solo 4R</span>
                                 </span>
                             </div>
+                        </div>
+
+                        <!-- Interactive Control Bar on Each Card -->
+                        <div class="p-2.5 bg-white border-t border-purple-50 flex items-center justify-between">
+                            <div class="truncate max-w-[80px]" :title="photo.original_filename">
+                                <p class="text-[11px] font-bold text-slate-800 truncate" x-text="photo.original_filename"></p>
+                                <p class="text-[9px] text-slate-400 font-mono" x-text="photo.width + 'x' + photo.height"></p>
+                            </div>
+
+                            <div class="flex items-center gap-1 shrink-0">
+                                <!-- Reorder Earlier / Later (if starred) -->
+                                <template x-if="photo.is_starred">
+                                    <div class="flex items-center gap-0.5">
+                                        <button 
+                                            type="button" 
+                                            @click="moveSlotEarlier(photo)"
+                                            class="w-6 h-6 rounded bg-purple-50 hover:bg-purple-100 text-purple-700 flex items-center justify-center text-[9px] font-bold transition cursor-pointer"
+                                            title="Shift earlier"
+                                        >◀</button>
+                                        <button 
+                                            type="button" 
+                                            @click="moveSlotLater(photo)"
+                                            class="w-6 h-6 rounded bg-purple-50 hover:bg-purple-100 text-purple-700 flex items-center justify-center text-[9px] font-bold transition cursor-pointer"
+                                            title="Shift later"
+                                        >▶</button>
+                                    </div>
+                                </template>
+
+                                <!-- Star Toggle Button (★) -->
+                                <button 
+                                    type="button" 
+                                    @click="toggleStar(photo)"
+                                    class="w-7 h-7 rounded-lg flex items-center justify-center text-xs transition cursor-pointer"
+                                    :class="photo.is_starred ? 'bg-yellow-100 text-yellow-800 font-bold' : 'bg-purple-50 text-purple-400 hover:text-yellow-600 hover:bg-yellow-50'"
+                                    :title="photo.is_starred ? 'Remove from photostrip selection' : 'Add to 10-photo strip pool'"
+                                >
+                                    ★
+                                </button>
+
+                                <!-- Favorite Selector Button (♥) -->
+                                <button 
+                                    type="button" 
+                                    @click="setFavorite(photo)"
+                                    class="w-7 h-7 rounded-lg flex items-center justify-center text-xs transition cursor-pointer"
+                                    :class="photo.is_favorite ? 'bg-pink-100 text-pink-600 font-bold' : 'bg-purple-50 text-purple-400 hover:text-pink-600 hover:bg-pink-50'"
+                                    title="Set as single favorite for standalone 4R print"
+                                >
+                                    ♥
+                                </button>
+
+                                <!-- Remove Individual Photo Button (Trash) -->
+                                <button 
+                                    type="button" 
+                                    @click="removePhoto(photo)"
+                                    class="w-7 h-7 rounded-lg flex items-center justify-center text-xs text-purple-400 hover:text-rose-600 hover:bg-rose-50 transition cursor-pointer"
+                                    title="Remove this photo from session"
+                                >
+                                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+                                loading="lazy"
+                            >
+
+                            <!-- Ingestion Badge: RAW or Standard -->
+                            <div class="absolute top-2 left-2 flex items-center gap-1">
+                                <span 
+                                    x-show="photo.is_raw"
+                                    class="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-purple-900/90 text-purple-200 shadow-xs border border-purple-700/50"
+                                >
+                                    RAW
+                                </span>
+                                <span 
+                                    x-show="!photo.is_raw"
+                                    class="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-900/80 text-slate-200 shadow-xs"
+                                >
+                                    JPG
+                                </span>
+                            </div>
+
+                            <!-- Strip Slot Badge (Left Strip #1..5, Right Strip #6..10, or Queue) -->
+                            <template x-if="getPhotoSlotInfo(photo)">
+                                <div class="absolute top-2 right-2 flex items-center gap-1 z-10">
+                                    <span 
+                                        class="text-[9px] px-2 py-0.5 rounded-full shadow-md font-bold"
+                                        :class="getPhotoSlotInfo(photo).badgeClass"
+                                        x-text="getPhotoSlotInfo(photo).label"
+                                    ></span>
+                                </div>
+                            </template>
 
                             <!-- Favorite Glowing Heart Badge (if favorite) -->
                             <div x-show="photo.is_favorite" class="absolute bottom-2 left-2">
@@ -459,17 +791,35 @@
 
                         <!-- Interactive Control Bar on Each Card -->
                         <div class="p-2.5 bg-white border-t border-slate-100 flex items-center justify-between">
-                            <div class="truncate max-w-[110px]" :title="photo.original_filename">
+                            <div class="truncate max-w-[80px]" :title="photo.original_filename">
                                 <p class="text-[11px] font-bold text-slate-800 truncate" x-text="photo.original_filename"></p>
                                 <p class="text-[9px] text-slate-400 font-mono" x-text="photo.width + 'x' + photo.height"></p>
                             </div>
 
                             <div class="flex items-center gap-1 shrink-0">
+                                <!-- Reorder Earlier / Later (if starred) -->
+                                <template x-if="photo.is_starred">
+                                    <div class="flex items-center gap-0.5">
+                                        <button 
+                                            type="button" 
+                                            @click="moveSlotEarlier(photo)"
+                                            class="w-6 h-6 rounded bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center text-[9px] transition cursor-pointer"
+                                            title="Shift earlier"
+                                        >◀</button>
+                                        <button 
+                                            type="button" 
+                                            @click="moveSlotLater(photo)"
+                                            class="w-6 h-6 rounded bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center text-[9px] transition cursor-pointer"
+                                            title="Shift later"
+                                        >▶</button>
+                                    </div>
+                                </template>
+
                                 <!-- Star Toggle Button (★) -->
                                 <button 
                                     type="button" 
                                     @click="toggleStar(photo)"
-                                    class="w-7 h-7 rounded-lg flex items-center justify-center text-xs transition"
+                                    class="w-7 h-7 rounded-lg flex items-center justify-center text-xs transition cursor-pointer"
                                     :class="photo.is_starred ? 'bg-amber-100 text-amber-700 font-bold' : 'bg-slate-100 text-slate-400 hover:text-amber-600 hover:bg-amber-50'"
                                     :title="photo.is_starred ? 'Remove from photostrip selection' : 'Add to 10-photo strip pool'"
                                 >
@@ -480,11 +830,21 @@
                                 <button 
                                     type="button" 
                                     @click="setFavorite(photo)"
-                                    class="w-7 h-7 rounded-lg flex items-center justify-center text-xs transition"
+                                    class="w-7 h-7 rounded-lg flex items-center justify-center text-xs transition cursor-pointer"
                                     :class="photo.is_favorite ? 'bg-rose-100 text-rose-600 font-bold' : 'bg-slate-100 text-slate-400 hover:text-rose-600 hover:bg-rose-50'"
                                     title="Set as single favorite for standalone 4R print"
                                 >
                                     ♥
+                                </button>
+
+                                <!-- Remove Individual Photo Button (Trash) -->
+                                <button 
+                                    type="button" 
+                                    @click="removePhoto(photo)"
+                                    class="w-7 h-7 rounded-lg flex items-center justify-center text-xs text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition cursor-pointer"
+                                    title="Remove this photo from session"
+                                >
+                                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                                 </button>
                             </div>
                         </div>
@@ -523,67 +883,76 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 
                 <!-- Output A: 4R Photostrip Composite Preview -->
-                <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200">
+                <div class="bg-purple-50/30 p-5 rounded-2xl border border-purple-100 shadow-xs">
                     <div class="flex items-center justify-between mb-3">
-                        <span class="text-xs font-bold text-slate-800">Output A: 4R Dual Photostrip (10 Photos)</span>
-                        <span class="text-[10px] font-mono bg-slate-200 text-slate-700 px-2 py-0.5 rounded font-bold">1200 x 1800 px</span>
+                        <span class="text-xs font-black text-purple-950">Output A: 4R Dual Photostrip (10 Photos)</span>
+                        <span class="text-[10px] font-mono bg-purple-100 text-purple-800 px-2 py-0.5 rounded font-bold">1200 x 1800 px</span>
                     </div>
                     <p class="text-[11px] text-slate-500 mb-3">Two photostrip columns side-by-side (5 photos per column) with centered Galadya Studio footer logo.</p>
 
                     <!-- Mock Photostrip Canvas (CSS representation of PrintLayoutService layout) -->
-                    <div class="bg-white border-2 border-slate-300 rounded-xl p-2.5 shadow-md aspect-[2/3] max-w-sm mx-auto flex gap-2">
-                        <!-- Strip 1 -->
-                        <div class="flex-1 flex flex-col justify-between border-r border-dashed border-slate-200 pr-1">
-                            <div class="space-y-1.5">
-                                <template x-for="(p, i) in getStripCol1()" :key="i">
-                                    <div class="aspect-[16/9] bg-slate-200 rounded overflow-hidden">
-                                        <img :src="p?.preview_url" class="w-full h-full object-cover">
-                                    </div>
-                                </template>
+                    <div class="bg-white border-2 border-purple-200 rounded-2xl p-2.5 shadow-md aspect-[2/3] max-w-sm mx-auto flex gap-2">
+                        <!-- Strip 1 (Left Part: Photos 1 to 5) -->
+                        <div class="flex-1 flex flex-col justify-between border-r border-dashed border-purple-200 pr-1">
+                            <div>
+                                <div class="text-[9px] font-black uppercase tracking-wider text-purple-800 bg-purple-100 py-0.5 rounded text-center mb-1.5">
+                                    Left Strip (1 – 5)
+                                </div>
+                                <div class="space-y-1.5">
+                                    <template x-for="(p, i) in getStripCol1()" :key="i">
+                                        <div class="aspect-[16/9] bg-slate-200 rounded overflow-hidden relative shadow-2xs">
+                                            <img :src="p?.preview_url" class="w-full h-full object-cover">
+                                            <span class="absolute top-0.5 left-0.5 bg-purple-900/80 text-white text-[8px] font-bold px-1 rounded" x-text="'#' + (i + 1)"></span>
+                                        </div>
+                                    </template>
+                                </div>
                             </div>
-                            <!-- Centered Footer Branding -->
-                            <div class="text-center py-2">
-                                <span class="text-[10px] font-black tracking-widest text-slate-900 block">GALADYA</span>
-                                <span class="text-[8px] text-amber-600 font-bold block -mt-1">STUDIO</span>
+                            <!-- Centered Footer Branding (Authentic Studio Logo) -->
+                            <div class="text-center py-2 border-t border-purple-100 mt-1">
+                                <img src="{{ asset('images/logo 1.png') }}" alt="Galadya Studio" class="h-6 mx-auto object-contain">
                             </div>
                         </div>
 
-                        <!-- Strip 2 -->
+                        <!-- Strip 2 (Right Part: Photos 6 to 10) -->
                         <div class="flex-1 flex flex-col justify-between pl-1">
-                            <div class="space-y-1.5">
-                                <template x-for="(p, i) in getStripCol2()" :key="i">
-                                    <div class="aspect-[16/9] bg-slate-200 rounded overflow-hidden">
-                                        <img :src="p?.preview_url" class="w-full h-full object-cover">
-                                    </div>
-                                </template>
+                            <div>
+                                <div class="text-[9px] font-black uppercase tracking-wider text-yellow-900 bg-yellow-100 py-0.5 rounded text-center mb-1.5">
+                                    Right Strip (6 – 10)
+                                </div>
+                                <div class="space-y-1.5">
+                                    <template x-for="(p, i) in getStripCol2()" :key="i">
+                                        <div class="aspect-[16/9] bg-slate-200 rounded overflow-hidden relative shadow-2xs">
+                                            <img :src="p?.preview_url" class="w-full h-full object-cover">
+                                            <span class="absolute top-0.5 left-0.5 bg-yellow-500 text-purple-950 text-[8px] font-black px-1 rounded" x-text="'#' + (i + 6)"></span>
+                                        </div>
+                                    </template>
+                                </div>
                             </div>
-                            <!-- Centered Footer Branding -->
-                            <div class="text-center py-2">
-                                <span class="text-[10px] font-black tracking-widest text-slate-900 block">GALADYA</span>
-                                <span class="text-[8px] text-amber-600 font-bold block -mt-1">STUDIO</span>
+                            <!-- Centered Footer Branding (Authentic Studio Logo) -->
+                            <div class="text-center py-2 border-t border-purple-100 mt-1">
+                                <img src="{{ asset('images/logo 1.png') }}" alt="Galadya Studio" class="h-6 mx-auto object-contain">
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Output B: Solo Favorite 4R Print Preview -->
-                <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200">
+                <div class="bg-purple-50/30 p-5 rounded-2xl border border-purple-100 shadow-xs">
                     <div class="flex items-center justify-between mb-3">
-                        <span class="text-xs font-bold text-slate-800">Output B: Solo Favorite 4R Print</span>
-                        <span class="text-[10px] font-mono bg-slate-200 text-slate-700 px-2 py-0.5 rounded font-bold">1200 x 1800 px</span>
+                        <span class="text-xs font-black text-purple-950">Output B: Solo Favorite 4R Print</span>
+                        <span class="text-[10px] font-mono bg-purple-100 text-purple-800 px-2 py-0.5 rounded font-bold">1200 x 1800 px</span>
                     </div>
                     <p class="text-[11px] text-slate-500 mb-3">Selected favorite scaled and centered with Galadya Studio logo placed at bottom-left corner (3% canvas area).</p>
 
                     <!-- Mock Solo Canvas -->
-                    <div class="bg-white border-2 border-slate-300 rounded-xl p-2.5 shadow-md aspect-[2/3] max-w-sm mx-auto relative flex items-center justify-center overflow-hidden">
+                    <div class="bg-white border-2 border-purple-200 rounded-2xl p-2.5 shadow-md aspect-[2/3] max-w-sm mx-auto relative flex items-center justify-center overflow-hidden">
                         <template x-if="favoritePhoto">
                             <img :src="favoritePhoto.preview_url" class="w-full h-full object-contain">
                         </template>
 
-                        <!-- Bottom-left logo overlay @ 3% canvas area -->
-                        <div class="absolute bottom-4 left-4 bg-white/80 backdrop-blur-xs px-2.5 py-1 rounded-md shadow-xs border border-white/50">
-                            <span class="text-[10px] font-black tracking-widest text-slate-900 block">GALADYA</span>
-                            <span class="text-[7px] text-amber-600 font-bold block -mt-1">STUDIO PHOTOPRINT</span>
+                        <!-- Bottom-left authentic logo overlay @ 3% canvas area -->
+                        <div class="absolute bottom-4 left-4 bg-white/95 backdrop-blur-xs px-2.5 py-1.5 rounded-xl shadow-md border border-purple-200/60">
+                            <img src="{{ asset('images/logo 1.png') }}" alt="Galadya Studio" class="h-6 w-auto object-contain">
                         </div>
                     </div>
                 </div>
@@ -591,19 +960,19 @@
             </div>
 
             <!-- Payment Finalization Section -->
-            <div class="mt-8 pt-6 border-t border-slate-200">
-                <h3 class="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
-                    <i data-lucide="credit-card" class="w-4 h-4 text-amber-500"></i>
+            <div class="mt-8 pt-6 border-t border-purple-100">
+                <h3 class="text-base font-black text-purple-950 mb-4 flex items-center gap-2">
+                    <i data-lucide="credit-card" class="w-4 h-4 text-purple-600"></i>
                     <span>Step 5: Finalize Payment & Commit Transaction</span>
                 </h3>
 
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <!-- Payment Method -->
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Payment Method</label>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">Payment Method</label>
                         <select 
                             x-model="paymentMethod" 
-                            class="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold focus:outline-none focus:border-amber-500"
+                            class="w-full px-3 py-2 rounded-xl bg-purple-50/40 border border-purple-200 text-xs font-bold text-purple-950 focus:outline-none focus:border-purple-500"
                         >
                             <option value="cash">Cash</option>
                             <option value="gcash">GCash</option>
@@ -615,13 +984,13 @@
 
                     <!-- Discount Input -->
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Discount Amount (₱)</label>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">Discount Amount (₱)</label>
                         <input 
                             type="number" 
                             x-model.number="discountAmount" 
                             min="0" 
                             step="10"
-                            class="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold focus:outline-none focus:border-amber-500"
+                            class="w-full px-3 py-2 rounded-xl bg-purple-50/40 border border-purple-200 text-xs font-bold text-purple-950 focus:outline-none focus:border-purple-500"
                         >
                     </div>
 
@@ -631,7 +1000,7 @@
                             type="button" 
                             @click="finalizeTransaction()"
                             :disabled="isSubmitting"
-                            class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 text-slate-950 font-bold text-xs uppercase tracking-wider shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2 transition cursor-pointer"
+                            class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-600 hover:opacity-95 text-white font-black text-xs uppercase tracking-wider shadow-lg shadow-purple-950/30 flex items-center justify-center gap-2 transition cursor-pointer"
                         >
                             <i x-show="!isSubmitting" data-lucide="check-check" class="w-4 h-4"></i>
                             <span x-show="!isSubmitting" x-text="'Commit ₱' + getGrandTotal().toFixed(2) + ' & Generate Prints'"></span>
@@ -650,12 +1019,12 @@
     <div 
         x-show="showAddClientModal" 
         x-transition.opacity 
-        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-purple-950/70 backdrop-blur-xs"
         style="display: none;"
     >
-        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200" @click.outside="showAddClientModal = false">
-            <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
-                <h3 class="text-sm font-bold text-slate-900">Add New Studio Client</h3>
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-purple-200" @click.outside="showAddClientModal = false">
+            <div class="flex items-center justify-between mb-4 pb-2 border-b border-purple-100">
+                <h3 class="text-sm font-black text-purple-950">Add New Studio Client</h3>
                 <button @click="showAddClientModal = false" class="text-slate-400 hover:text-slate-600">
                     <i data-lucide="x" class="w-4 h-4"></i>
                 </button>
@@ -665,32 +1034,32 @@
                 <div class="grid grid-cols-2 gap-2">
                     <div>
                         <label class="block text-[11px] font-semibold text-slate-600 mb-1">First Name *</label>
-                        <input type="text" x-model="newClient.first_name" required class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs">
+                        <input type="text" x-model="newClient.first_name" required class="w-full px-3 py-1.5 rounded-lg border border-purple-200 text-xs focus:outline-none focus:border-purple-500">
                     </div>
                     <div>
                         <label class="block text-[11px] font-semibold text-slate-600 mb-1">Last Name *</label>
-                        <input type="text" x-model="newClient.last_name" required class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs">
+                        <input type="text" x-model="newClient.last_name" required class="w-full px-3 py-1.5 rounded-lg border border-purple-200 text-xs focus:outline-none focus:border-purple-500">
                     </div>
                 </div>
 
                 <div>
                     <label class="block text-[11px] font-semibold text-slate-600 mb-1">Contact Number *</label>
-                    <input type="text" x-model="newClient.contact_number" required placeholder="0917..." class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs">
+                    <input type="text" x-model="newClient.contact_number" required placeholder="0917..." class="w-full px-3 py-1.5 rounded-lg border border-purple-200 text-xs focus:outline-none focus:border-purple-500">
                 </div>
 
                 <div>
                     <label class="block text-[11px] font-semibold text-slate-600 mb-1">Email Address</label>
-                    <input type="email" x-model="newClient.email" class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs">
+                    <input type="email" x-model="newClient.email" class="w-full px-3 py-1.5 rounded-lg border border-purple-200 text-xs focus:outline-none focus:border-purple-500">
                 </div>
 
                 <div>
                     <label class="block text-[11px] font-semibold text-slate-600 mb-1">Notes</label>
-                    <input type="text" x-model="newClient.notes" placeholder="e.g. Birthday, graduation shoot" class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs">
+                    <input type="text" x-model="newClient.notes" placeholder="e.g. Birthday, graduation shoot" class="w-full px-3 py-1.5 rounded-lg border border-purple-200 text-xs focus:outline-none focus:border-purple-500">
                 </div>
 
                 <div class="pt-2 flex items-center justify-end gap-2">
-                    <button type="button" @click="showAddClientModal = false" class="px-3 py-1.5 text-xs text-slate-600 font-medium">Cancel</button>
-                    <button type="submit" class="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-xl transition">Save & Select</button>
+                    <button type="button" @click="showAddClientModal = false" class="px-3 py-1.5 text-xs text-slate-600 font-semibold">Cancel</button>
+                    <button type="submit" class="px-4 py-2 bg-gradient-to-r from-purple-700 to-pink-600 hover:from-purple-600 hover:to-pink-500 text-white font-bold text-xs rounded-xl transition">Save & Select</button>
                 </div>
             </form>
         </div>
@@ -702,17 +1071,22 @@
     <div 
         x-show="showSuccessModal" 
         x-transition.opacity 
-        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-purple-950/80 backdrop-blur-sm"
         style="display: none;"
     >
-        <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-200 text-center">
-            <div class="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-4 ring-8 ring-emerald-50">
-                <i data-lucide="check-circle" class="w-8 h-8"></i>
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-purple-200 text-center relative overflow-hidden">
+            <!-- Authentic Studio Logo Branding in Modal -->
+            <div class="inline-flex items-center justify-center p-2.5 rounded-2xl bg-white shadow-md border border-purple-100 mx-auto mb-3">
+                <img src="{{ asset('images/logo 1.png') }}" alt="Galadya Studio" class="h-10 w-auto object-contain">
             </div>
 
-            <span class="text-xs font-bold text-amber-600 uppercase tracking-widest">Transaction Completed</span>
-            <h2 class="text-xl font-bold text-slate-900 mt-1 mb-1">Session Saved & 4R Prints Ready!</h2>
-            <p class="text-xs text-slate-500 mb-6" x-text="'Tx Code: ' + (finalResult?.transaction?.transaction_code || '')"></p>
+            <div class="w-12 h-12 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center mx-auto mb-2 ring-8 ring-purple-50">
+                <i data-lucide="check-circle" class="w-6 h-6"></i>
+            </div>
+
+            <span class="text-xs font-bold text-pink-600 uppercase tracking-widest">Transaction Completed</span>
+            <h2 class="text-xl font-black text-purple-950 mt-1 mb-1">Session Saved & 4R Prints Ready!</h2>
+            <p class="text-xs text-purple-600/80 mb-6 font-mono font-semibold" x-text="'Tx Code: ' + (finalResult?.transaction?.transaction_code || '')"></p>
 
             <!-- Instant Download & Print Action Buttons -->
             <div class="space-y-3 mb-6">
@@ -721,9 +1095,9 @@
                     :href="finalResult?.print_photostrip_url" 
                     download
                     target="_blank"
-                    class="w-full py-3 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs flex items-center justify-center gap-2 transition shadow-sm"
+                    class="w-full py-3 px-4 rounded-xl bg-[#1c053a] hover:bg-[#2c0859] text-white font-bold text-xs flex items-center justify-center gap-2 transition shadow-md border border-purple-900"
                 >
-                    <i data-lucide="download" class="w-4 h-4 text-amber-400"></i>
+                    <i data-lucide="download" class="w-4 h-4 text-yellow-300"></i>
                     <span>Download Output A: 4R Dual Photostrip JPEG</span>
                 </a>
 
@@ -732,9 +1106,9 @@
                     :href="finalResult?.print_solo_url" 
                     download
                     target="_blank"
-                    class="w-full py-3 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs flex items-center justify-center gap-2 transition shadow-sm"
+                    class="w-full py-3 px-4 rounded-xl bg-[#1c053a] hover:bg-[#2c0859] text-white font-bold text-xs flex items-center justify-center gap-2 transition shadow-md border border-purple-900"
                 >
-                    <i data-lucide="download" class="w-4 h-4 text-rose-400"></i>
+                    <i data-lucide="download" class="w-4 h-4 text-pink-400"></i>
                     <span>Download Output B: Solo Favorite 4R JPEG</span>
                 </a>
 
@@ -742,19 +1116,19 @@
                 <button 
                     type="button" 
                     @click="openThermalReceiptPrint()"
-                    class="w-full py-3 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 transition shadow-md shadow-amber-500/20"
+                    class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-600 hover:opacity-95 text-white font-black text-xs flex items-center justify-center gap-2 transition shadow-lg shadow-purple-950/30 uppercase tracking-wider cursor-pointer"
                 >
                     <i data-lucide="printer" class="w-4 h-4"></i>
                     <span>Print Thermal POS Receipt (80mm)</span>
                 </button>
             </div>
 
-            <div class="pt-4 border-t border-slate-100 flex items-center justify-between">
-                <a href="{{ route('dashboard') }}" class="text-xs text-slate-500 hover:text-slate-800 font-medium">Return to Dashboard</a>
+            <div class="pt-4 border-t border-purple-100 flex items-center justify-between">
+                <a href="{{ route('dashboard') }}" class="text-xs text-purple-700 hover:text-purple-950 font-bold">Return to Dashboard</a>
                 <button 
                     type="button" 
                     @click="resetWizard()" 
-                    class="text-xs font-bold text-amber-600 hover:text-amber-700"
+                    class="text-xs font-black text-pink-600 hover:text-pink-700 cursor-pointer"
                 >
                     Start Next Shoot Session &rarr;
                 </button>
@@ -1050,7 +1424,59 @@ function workflowWizard(config) {
             this.photos.forEach(p => p.is_starred = false);
         },
 
-        // Photostrip Column Slicers for Preview
+        removePhoto(photo) {
+            const idx = this.photos.findIndex(p => p.id === photo.id);
+            if (idx !== -1) {
+                const removed = this.photos.splice(idx, 1)[0];
+                
+                // If the removed photo was favorite, select next starred or first available photo
+                if (removed.is_favorite) {
+                    const nextFav = this.photos.find(p => p.is_starred) || (this.photos.length > 0 ? this.photos[0] : null);
+                    if (nextFav) {
+                        this.setFavorite(nextFav);
+                    }
+                }
+
+                // Delete temp files from backend storage asynchronously
+                fetch('{{ route("workflow.delete.photo") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: JSON.stringify({
+                        storage_path: removed.storage_path,
+                        preview_path: removed.preview_path
+                    })
+                }).catch(e => console.error('Error removing file from disk:', e));
+
+                setTimeout(() => window.initLucideIcons && window.initLucideIcons(), 50);
+            }
+        },
+
+        clearAllPhotos() {
+            if (this.photos.length === 0) return;
+            if (!confirm(`Are you sure you want to clear all ${this.photos.length} ingested photos?`)) {
+                return;
+            }
+
+            const photosToDelete = [...this.photos];
+            this.photos = [];
+
+            // Delete temp files from backend storage asynchronously
+            fetch('{{ route("workflow.clear.photos") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({ photos: photosToDelete })
+            }).catch(e => console.error('Error clearing files:', e));
+
+            setTimeout(() => window.initLucideIcons && window.initLucideIcons(), 50);
+        },
+
+        // Photostrip Column & Slot Slicers (Requirement: First 5 photos on Left Part, Second 5 on Right Part)
         getStarredPhotos() {
             const starred = this.photos.filter(p => p.is_starred);
             if (starred.length === 0) return [];
@@ -1065,7 +1491,90 @@ function workflowWizard(config) {
             return this.getStarredPhotos().slice(0, 5);
         },
         getStripCol2() {
-            return this.getStarredPhotos().slice(5, 5);
+            return this.getStarredPhotos().slice(5, 10);
+        },
+
+        // Real-Time Ingest Slots for Dual Photostrips
+        getLeftStripSlots() {
+            const starred = this.photos.filter(p => p.is_starred);
+            const slots = [];
+            for (let i = 0; i < 5; i++) {
+                slots.push({
+                    slotNumber: i + 1,
+                    photo: starred[i] || null
+                });
+            }
+            return slots;
+        },
+        getRightStripSlots() {
+            const starred = this.photos.filter(p => p.is_starred);
+            const slots = [];
+            for (let i = 5; i < 10; i++) {
+                slots.push({
+                    slotNumber: i + 1,
+                    photo: starred[i] || null
+                });
+            }
+            return slots;
+        },
+
+        // Slot and Strip placement badge info for any photo card
+        getPhotoSlotInfo(photo) {
+            if (!photo.is_starred) return null;
+            const starred = this.photos.filter(p => p.is_starred);
+            const idx = starred.findIndex(p => p.id === photo.id);
+            if (idx === -1) return null;
+
+            if (idx < 5) {
+                return {
+                    strip: 'left',
+                    slot: idx + 1,
+                    label: `Left #${idx + 1}`,
+                    badgeClass: 'bg-sky-600 text-white'
+                };
+            } else if (idx < 10) {
+                return {
+                    strip: 'right',
+                    slot: idx + 1,
+                    label: `Right #${idx + 1}`,
+                    badgeClass: 'bg-amber-500 text-slate-950 font-black'
+                };
+            } else {
+                return {
+                    strip: 'extra',
+                    slot: idx + 1,
+                    label: `Queue #${idx + 1}`,
+                    badgeClass: 'bg-rose-500 text-white'
+                };
+            }
+        },
+
+        // Move photo earlier or later among starred slots
+        moveSlotEarlier(photo) {
+            const starred = this.photos.filter(p => p.is_starred);
+            const idx = starred.findIndex(p => p.id === photo.id);
+            if (idx > 0) {
+                const prevPhoto = starred[idx - 1];
+                const p1Idx = this.photos.findIndex(p => p.id === photo.id);
+                const p2Idx = this.photos.findIndex(p => p.id === prevPhoto.id);
+                const temp = this.photos[p1Idx];
+                this.photos[p1Idx] = this.photos[p2Idx];
+                this.photos[p2Idx] = temp;
+                setTimeout(() => window.initLucideIcons && window.initLucideIcons(), 50);
+            }
+        },
+        moveSlotLater(photo) {
+            const starred = this.photos.filter(p => p.is_starred);
+            const idx = starred.findIndex(p => p.id === photo.id);
+            if (idx >= 0 && idx < starred.length - 1) {
+                const nextPhoto = starred[idx + 1];
+                const p1Idx = this.photos.findIndex(p => p.id === photo.id);
+                const p2Idx = this.photos.findIndex(p => p.id === nextPhoto.id);
+                const temp = this.photos[p1Idx];
+                this.photos[p1Idx] = this.photos[p2Idx];
+                this.photos[p2Idx] = temp;
+                setTimeout(() => window.initLucideIcons && window.initLucideIcons(), 50);
+            }
         },
 
         proceedToStep4() {
@@ -1085,6 +1594,12 @@ function workflowWizard(config) {
         finalizeTransaction() {
             this.isSubmitting = true;
 
+            // Ensure photos sent to server place the starred photos in strict strip order:
+            // Left Strip (0..4), Right Strip (5..9), extra starred, followed by unstarred.
+            const starred = this.photos.filter(p => p.is_starred);
+            const unstarred = this.photos.filter(p => !p.is_starred);
+            const sortedPhotos = [...starred, ...unstarred];
+
             const payload = {
                 customer_id: this.selectedCustomer.id,
                 package_id: this.selectedPackageId,
@@ -1092,7 +1607,7 @@ function workflowWizard(config) {
                 discount_amount: parseFloat(this.discountAmount) || 0,
                 payment_method: this.paymentMethod,
                 payment_status: 'completed',
-                photos: this.photos.map(p => ({
+                photos: sortedPhotos.map(p => ({
                     original_filename: p.original_filename,
                     storage_path: p.storage_path,
                     preview_path: p.preview_path,

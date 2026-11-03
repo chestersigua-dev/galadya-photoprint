@@ -12,7 +12,7 @@
         }
         body {
             font-family: 'Courier New', Courier, monospace;
-            background: #f8fafc;
+            background: #faf7fd;
             color: #000;
             padding: 20px;
             font-size: 12px;
@@ -22,43 +22,56 @@
             background: #fff;
             max-width: 80mm;
             margin: 0 auto;
-            padding: 15px;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            padding: 18px 15px;
+            border: 1px solid #d8b4fe;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(119, 0, 220, 0.08);
         }
         .text-center { text-align: center; }
         .text-right { text-align: right; }
         .font-bold { font-weight: bold; }
-        .divider { border-top: 1px dashed #000; margin: 8px 0; }
+        .divider { border-top: 1px dashed #7700dc; margin: 10px 0; }
         .flex { display: flex; justify-content: space-between; }
         .mb-1 { margin-bottom: 4px; }
+        .receipt-logo {
+            max-height: 42px;
+            margin: 0 auto 8px;
+            display: block;
+            object-fit: contain;
+        }
         .print-btn {
             display: block;
-            margin: 15px auto 0;
-            padding: 8px 16px;
-            background: #0f172a;
+            margin: 16px auto 0;
+            padding: 9px 18px;
+            background: linear-gradient(135deg, #7700dc, #ec4899);
             color: #fff;
             border: none;
-            border-radius: 6px;
+            border-radius: 8px;
             cursor: pointer;
             font-size: 12px;
             font-weight: bold;
+            box-shadow: 0 2px 6px rgba(119, 0, 220, 0.25);
+            transition: opacity 0.2s;
+        }
+        .print-btn:hover {
+            opacity: 0.9;
         }
         @media print {
             body { background: #fff; padding: 0; }
             .receipt-card { border: none; box-shadow: none; width: 100%; max-width: 80mm; padding: 5px; }
             .no-print { display: none !important; }
+            .divider { border-top: 1px dashed #000; }
         }
     </style>
 </head>
 <body>
     <div class="receipt-card">
         <div class="text-center">
-            <h1 style="font-size: 16px; font-weight: bold;">{{ $receipt['studio_name'] }}</h1>
-            <p style="font-size: 10px;">{{ $receipt['studio_tagline'] }}</p>
-            <p style="font-size: 10px;">{{ $receipt['studio_contact'] }}</p>
-            <p style="font-size: 10px;">{{ $receipt['studio_address'] }}</p>
+            <img src="{{ asset('images/logo 1.png') }}" alt="Galadya Studio Logo" class="receipt-logo">
+            <h1 style="font-size: 15px; font-weight: bold; letter-spacing: 0.5px;">{{ $receipt['studio_name'] }}</h1>
+            <p style="font-size: 10px; color: #4b5563;">{{ $receipt['studio_tagline'] }}</p>
+            <p style="font-size: 10px; color: #4b5563;">{{ $receipt['studio_contact'] }}</p>
+            <p style="font-size: 10px; color: #4b5563;">{{ $receipt['studio_address'] }}</p>
         </div>
 
         <div class="divider"></div>
@@ -111,7 +124,7 @@
 
         <div class="divider"></div>
 
-        <p class="text-center" style="font-size: 10px; margin-top: 8px;">
+        <p class="text-center" style="font-size: 10px; margin-top: 8px; color: #4b5563; font-style: italic;">
             {{ $receipt['footer_text'] }}
         </p>
 
@@ -119,4 +132,3 @@
     </div>
 </body>
 </html>
-

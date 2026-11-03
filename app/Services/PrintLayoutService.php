@@ -33,7 +33,9 @@ class PrintLayoutService
         $this->canvasHeight = (int) Setting::get('print_canvas_height', 1800);
         $this->margin = (int) Setting::get('print_margin_px', 10);
         $this->dpi = (int) Setting::get('print_dpi', 300);
-        $this->logoPath = public_path('images/galadya-logo.png');
+        $this->logoPath = file_exists(public_path('images/logo 1.png'))
+            ? public_path('images/logo 1.png')
+            : public_path('images/galadya-logo.png');
     }
 
     /**
@@ -239,12 +241,15 @@ class PrintLayoutService
                 $logoOrigW = imagesx($logo);
                 $logoOrigH = imagesy($logo);
 
-                // Scale logo to fit nicely in footer (width ~ 320px)
-                $targetLogoW = 340;
-                $targetLogoH = (int) round($logoOrigH * ($targetLogoW / $logoOrigW));
+                // Scale logo to fit proportionally inside footer with margin
+                $maxW = $width - 80;
+                $maxH = $height - 55;
+                $scale = min($maxW / $logoOrigW, $maxH / $logoOrigH, 1.0);
+                $targetLogoW = max(1, (int) round($logoOrigW * $scale));
+                $targetLogoH = max(1, (int) round($logoOrigH * $scale));
 
                 $logoX = $x + (int)(($width - $targetLogoW) / 2);
-                $logoY = $y + 10;
+                $logoY = $y + (int)(($height - $targetLogoH - 30) / 2);
 
                 imagecopyresampled(
                     $canvas,

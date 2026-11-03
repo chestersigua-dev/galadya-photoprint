@@ -13,6 +13,7 @@ use App\Services\RawImageService;
 use App\Services\TransactionService;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class GaladyaWorkflowTest extends TestCase
@@ -174,5 +175,122 @@ class GaladyaWorkflowTest extends TestCase
             ->get('/workflow/start')
             ->assertStatus(200)
             ->assertSee('Interactive Photo Selection Workflow');
+    }
+
+    public function test_operator_can_delete_single_ingested_photo(): void
+    {
+        $user = User::first();
+        Storage::disk('public')->put('raw_uploads/temp_test.jpg', 'fake-image-content');
+        Storage::disk('public')->put('previews/temp_test_preview.jpg', 'fake-preview-content');
+
+        $this->actingAs($user)
+            ->postJson(route('workflow.delete.photo'), [
+                'storage_path' => 'raw_uploads/temp_test.jpg',
+                'preview_path' => 'previews/temp_test_preview.jpg',
+            ])
+            ->assertStatus(200)
+            ->assertJson(['success' => true]);
+
+        Storage::disk('public')->assertMissing('raw_uploads/temp_test.jpg');
+        Storage::disk('public')->assertMissing('previews/temp_test_preview.jpg');
+    }
+
+    public function test_operator_can_clear_all_ingested_photos(): void
+    {
+        $user = User::first();
+        Storage::disk('public')->put('raw_uploads/temp_1.jpg', 'img-1');
+        Storage::disk('public')->put('raw_uploads/temp_2.jpg', 'img-2');
+
+        $this->actingAs($user)
+            ->postJson(route('workflow.clear.photos'), [
+                'photos' => [
+                    ['storage_path' => 'raw_uploads/temp_1.jpg', 'preview_path' => null],
+                    ['storage_path' => 'raw_uploads/temp_2.jpg', 'preview_path' => null],
+                ],
+            ])
+            ->assertStatus(200)
+            ->assertJson(['success' => true]);
+
+        Storage::disk('public')->assertMissing('raw_uploads/temp_1.jpg');
+        Storage::disk('public')->assertMissing('raw_uploads/temp_2.jpg');
+    }
+
+    public function test_workflow_view_contains_dual_photostrip_split_layout(): void
+    {
+        $user = User::first();
+
+        $this->actingAs($user)
+            ->get(route('workflow.start'))
+            ->assertStatus(200)
+            ->assertSee('Dual Photostrip Real-Time Layout')
+            ->assertSee('Left Part: Strip 1 (Photos 1 – 5)')
+            ->assertSee('Right Part: Strip 2 (Photos 6 – 10)')
+            ->assertSee('Clear All Photos');
+    }
+
+    public function test_print_layout_partitions_ten_photos_evenly(): void
+    {
+        $layoutService = app(PrintLayoutService::class);
+        $reflection = new \ReflectionClass($layoutService);
+        $method = $reflection->getMethod('prepareTenPhotos');
+        $method->setAccessible(true);
+
+        $photos = ['p1.jpg', 'p2.jpg', 'p3.jpg', 'p4.jpg', 'p5.jpg', 'p6.jpg', 'p7.jpg', 'p8.jpg', 'p9.jpg', 'p10.jpg'];
+        $prepared = $method->invoke($layoutService, $photos);
+
+        $col1 = array_slice($prepared, 0, 5);
+        $col2 = array_slice($prepared, 5, 5);
+
+        $this->assertCount(5, $col1);
+        $this->assertCount(5, $col2);
+        $this->assertEquals(['p1.jpg', 'p2.jpg', 'p3.jpg', 'p4.jpg', 'p5.jpg'], $col1);
+        $this->assertEquals(['p6.jpg', 'p7.jpg', 'p8.jpg', 'p9.jpg', 'p10.jpg'], $col2);
+    }
+
+    public function test_brand_logo_file_exists_and_is_valid_image(): void
+    {
+        $logoPath = public_path('images/logo 1.png');
+        $this->assertFileExists($logoPath);
+
+        $info = getimagesize($logoPath);
+        $this->assertNotFalse($info);
+        $this->assertEquals(IMAGETYPE_PNG, $info[2]);
+        $this->assertGreaterThan(0, $info[0]);
+        $this->assertGreaterThan(0, $info[1]);
+    }
+
+    public function test_all_studio_screens_render_successfully_with_studio_branding(): void
+    {
+        $user = User::first();
+
+        // Guest screen
+        $this->get('/login')
+            ->assertStatus(200)
+            ->assertSee('images/logo 1.png', false);
+
+        // Authenticated screens
+        $this->actingAs($user)->get('/dashboard')
+            ->assertStatus(200)
+            ->assertSee('images/logo 1.png', false);
+
+        $this->actingAs($user)->get('/clients')
+            ->assertStatus(200)
+            ->assertSee('Client Database & Studio History', false);
+
+        $this->actingAs($user)->get('/packages')
+            ->assertStatus(200)
+            ->assertSee('Active Self Shoot Packages', false);
+
+        $this->actingAs($user)->get('/transactions')
+            ->assertStatus(200)
+            ->assertSee('Transaction History & Print Archives', false);
+
+        $this->actingAs($user)->get('/settings')
+            ->assertStatus(200)
+            ->assertSee('images/logo 1.png', false);
+
+        $this->actingAs($user)->get('/admin/users')
+            ->assertStatus(200)
+            ->assertSee('Staff Users & Role Permissions', false);
     }
 }

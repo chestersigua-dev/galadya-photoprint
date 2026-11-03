@@ -40,6 +40,8 @@ Route::middleware('auth')->group(function () {
     Route::prefix('workflow')->name('workflow.')->middleware('module:import_print')->group(function () {
         Route::get('/start', [WorkflowController::class, 'index'])->name('start');
         Route::post('/upload', [WorkflowController::class, 'upload'])->name('upload');
+        Route::post('/delete-photo', [WorkflowController::class, 'deletePhoto'])->name('delete.photo');
+        Route::post('/clear-photos', [WorkflowController::class, 'clearPhotos'])->name('clear.photos');
         Route::post('/finalize', [WorkflowController::class, 'finalize'])->name('finalize');
         Route::get('/api/clients', [WorkflowController::class, 'apiClients'])->name('api.clients');
         Route::post('/api/clients', [WorkflowController::class, 'apiStoreClient'])->name('api.clients.store');

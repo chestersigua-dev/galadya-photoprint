@@ -176,5 +176,41 @@ class WorkflowController extends Controller
             ], 422);
         }
     }
+
+    /**
+     * Remove a single ingested photo from storage.
+     */
+    public function deletePhoto(Request $request): JsonResponse
+    {
+        $storagePath = $request->input('storage_path');
+        $previewPath = $request->input('preview_path');
+
+        if ($storagePath && Storage::disk('public')->exists($storagePath)) {
+            Storage::disk('public')->delete($storagePath);
+        }
+        if ($previewPath && Storage::disk('public')->exists($previewPath)) {
+            Storage::disk('public')->delete($previewPath);
+        }
+
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * Clear all ingested photos from storage.
+     */
+    public function clearPhotos(Request $request): JsonResponse
+    {
+        $photos = $request->input('photos', []);
+        foreach ($photos as $p) {
+            if (!empty($p['storage_path']) && Storage::disk('public')->exists($p['storage_path'])) {
+                Storage::disk('public')->delete($p['storage_path']);
+            }
+            if (!empty($p['preview_path']) && Storage::disk('public')->exists($p['preview_path'])) {
+                Storage::disk('public')->delete($p['preview_path']);
+            }
+        }
+
+        return response()->json(['success' => true]);
+    }
 }
 

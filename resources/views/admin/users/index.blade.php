@@ -5,9 +5,12 @@
 @section('content')
 <div class="space-y-6 pt-2" x-data="{ showNewUserModal: false }">
     <!-- Header -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-purple-100 shadow-xs">
         <div>
-            <span class="text-xs font-bold text-amber-600 uppercase tracking-widest">Access Control (RBAC)</span>
+            <div class="flex items-center gap-2">
+                <span class="inline-block w-2 h-2 rounded-full bg-pink-500 animate-pulse"></span>
+                <span class="text-xs font-bold text-purple-600 uppercase tracking-widest">Access Control (RBAC)</span>
+            </div>
             <h1 class="text-xl font-bold text-slate-900 mt-1">Staff Users & Role Permissions</h1>
             <p class="text-xs text-slate-500">Manage studio operators, managers, permissions, and terminal authentication.</p>
         </div>
@@ -15,19 +18,19 @@
         <button 
             type="button" 
             @click="showNewUserModal = true"
-            class="inline-flex items-center gap-2 bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 text-slate-950 font-bold px-4 py-2.5 rounded-xl shadow-md shadow-amber-500/20 text-xs transition"
+            class="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 via-pink-500 to-yellow-400 hover:opacity-95 text-white font-bold px-4 py-2.5 rounded-xl shadow-md shadow-purple-600/25 text-xs transition"
         >
-            <i data-lucide="user-plus" class="w-4 h-4"></i>
+            <i data-lucide="user-plus" class="w-4 h-4 text-yellow-200"></i>
             <span>Add Staff User</span>
         </button>
     </div>
 
     <!-- Users Table -->
-    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+    <div class="bg-white rounded-2xl border border-purple-100 shadow-xs overflow-hidden">
         <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse">
                 <thead>
-                    <tr class="bg-slate-50 border-b border-slate-100 text-[11px] uppercase tracking-wider text-slate-500 font-semibold">
+                    <tr class="bg-purple-50/70 border-b border-purple-100 text-[11px] uppercase tracking-wider text-purple-900/70 font-semibold">
                         <th class="py-3.5 px-6">User</th>
                         <th class="py-3.5 px-6">Role</th>
                         <th class="py-3.5 px-6">Permissions Module Access</th>
@@ -35,12 +38,12 @@
                         <th class="py-3.5 px-6 text-right">Actions</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-100 text-xs text-slate-700">
+                <tbody class="divide-y divide-purple-50 text-xs text-slate-700">
                     @foreach ($users as $user)
-                        <tr class="hover:bg-slate-50/50 transition">
+                        <tr class="hover:bg-purple-50/40 transition">
                             <td class="py-4 px-6">
                                 <div class="flex items-center gap-3">
-                                    <img src="{{ $user->avatar_url }}" class="w-9 h-9 rounded-full ring-2 ring-slate-200 object-cover">
+                                    <img src="{{ $user->avatar_url }}" class="w-9 h-9 rounded-full ring-2 ring-purple-200 object-cover">
                                     <div>
                                         <p class="font-bold text-slate-900">{{ $user->name }}</p>
                                         <p class="text-[11px] text-slate-400">{{ $user->email }}</p>
@@ -48,17 +51,17 @@
                                 </div>
                             </td>
                             <td class="py-4 px-6 font-semibold">
-                                <span class="px-2.5 py-1 rounded-lg text-xs font-bold {{ $user->role?->slug === 'super_admin' ? 'bg-amber-100 text-amber-900 border border-amber-300' : 'bg-slate-100 text-slate-800' }}">
+                                <span class="px-2.5 py-1 rounded-lg text-xs font-bold {{ $user->role?->slug === 'super_admin' ? 'bg-gradient-to-r from-[#1c053a] to-purple-800 text-yellow-300 border border-purple-500/30' : 'bg-purple-100 text-purple-800' }}">
                                     {{ $user->role?->name ?? 'Staff' }}
                                 </span>
                             </td>
                             <td class="py-4 px-6">
                                 <div class="flex flex-wrap gap-1 max-w-sm">
                                     @if($user->role?->slug === 'super_admin')
-                                        <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">All Modules Unrestricted</span>
+                                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">All Modules Unrestricted</span>
                                     @else
                                         @foreach ($user->role?->permissions ?? [] as $perm)
-                                            <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 font-mono">
+                                            <span class="text-[10px] px-2 py-0.5 rounded bg-purple-50 text-purple-700 border border-purple-100 font-mono">
                                                 {{ $perm->slug }}
                                             </span>
                                         @endforeach
@@ -105,37 +108,44 @@
         class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs"
         style="display: none;"
     >
-        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200" @click.outside="showNewUserModal = false">
-            <h3 class="text-sm font-bold text-slate-900 mb-3">Add New Staff Terminal Account</h3>
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-purple-200" @click.outside="showNewUserModal = false">
+            <div class="flex items-center justify-between mb-3 pb-2 border-b border-purple-100">
+                <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-pink-500"></span>
+                    <h3 class="text-sm font-bold text-slate-900">Add New Staff Terminal Account</h3>
+                </div>
+                <button @click="showNewUserModal = false" class="text-slate-400 hover:text-slate-600">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
             <form method="POST" action="{{ route('admin.users.store') }}" class="space-y-3">
                 @csrf
                 <div>
                     <label class="block text-[11px] font-semibold text-slate-600 mb-1">Full Name</label>
-                    <input type="text" name="name" required placeholder="Staff Name" class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs">
+                    <input type="text" name="name" required placeholder="Staff Name" class="w-full px-3 py-1.5 rounded-lg border border-purple-200 text-xs focus:outline-none focus:border-purple-500">
                 </div>
                 <div>
                     <label class="block text-[11px] font-semibold text-slate-600 mb-1">Email Address</label>
-                    <input type="email" name="email" required placeholder="staff@galadya.com" class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs">
+                    <input type="email" name="email" required placeholder="staff@galadya.com" class="w-full px-3 py-1.5 rounded-lg border border-purple-200 text-xs focus:outline-none focus:border-purple-500">
                 </div>
                 <div>
                     <label class="block text-[11px] font-semibold text-slate-600 mb-1">Initial Password</label>
-                    <input type="password" name="password" required placeholder="Min 8 characters" class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs">
+                    <input type="password" name="password" required placeholder="Min 8 characters" class="w-full px-3 py-1.5 rounded-lg border border-purple-200 text-xs focus:outline-none focus:border-purple-500">
                 </div>
                 <div>
                     <label class="block text-[11px] font-semibold text-slate-600 mb-1">Role Assignment</label>
-                    <select name="role_id" required class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs">
+                    <select name="role_id" required class="w-full px-3 py-1.5 rounded-lg border border-purple-200 text-xs focus:outline-none focus:border-purple-500">
                         @foreach ($roles as $role)
                             <option value="{{ $role->id }}">{{ $role->name }} ({{ $role->slug }})</option>
                         @endforeach
                     </select>
                 </div>
-                <div class="pt-2 flex items-center justify-end gap-2">
-                    <button type="button" @click="showNewUserModal = false" class="px-3 py-1.5 text-xs text-slate-600">Cancel</button>
-                    <button type="submit" class="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-xl">Create User</button>
+                <div class="pt-3 flex items-center justify-end gap-2 border-t border-purple-100">
+                    <button type="button" @click="showNewUserModal = false" class="px-3 py-1.5 text-xs text-slate-600 font-medium hover:text-slate-800">Cancel</button>
+                    <button type="submit" class="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-500 hover:opacity-95 text-white font-bold text-xs rounded-xl shadow-xs">Create User</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 @endsection
-
