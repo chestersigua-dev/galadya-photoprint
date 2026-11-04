@@ -95,7 +95,17 @@
                         <span x-show="sidebarOpen" x-transition.opacity>Transactions</span>
                     </a>
 
-                    <!-- 6. User & Role Management -->
+                    <!-- 6. Blockchain Audit & Access Log -->
+                    <a 
+                        href="{{ route('admin.audit.index') }}" 
+                        class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition {{ request()->routeIs('admin.audit.*') ? 'bg-gradient-to-r from-purple-600 via-purple-500 to-pink-500 text-white font-bold shadow-md shadow-purple-950/40' : 'text-purple-200/90 hover:bg-purple-900/60 hover:text-white' }}"
+                    >
+                        <i data-lucide="shield-check" class="w-5 h-5 shrink-0 text-yellow-300"></i>
+                        <span x-show="sidebarOpen" x-transition.opacity class="flex-1">Blockchain Audit</span>
+                        <span x-show="sidebarOpen" class="text-[9px] px-1 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono font-bold">SHA-256</span>
+                    </a>
+
+                    <!-- 7. User & Role Management -->
                     @if(auth()->check() && (auth()->user()->hasRole('super_admin') || auth()->user()->canAccessModule('users_roles')))
                     <a 
                         href="{{ route('admin.users.index') }}" 
@@ -239,6 +249,10 @@
                             <a href="{{ route('transactions.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold {{ request()->routeIs('transactions.*') ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white' : 'text-purple-200 hover:bg-purple-900/50' }}">
                                 <i data-lucide="receipt" class="w-4 h-4"></i>
                                 <span>Transactions</span>
+                            </a>
+                            <a href="{{ route('admin.audit.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold {{ request()->routeIs('admin.audit.*') ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white' : 'text-purple-200 hover:bg-purple-900/50' }}">
+                                <i data-lucide="shield-check" class="w-4 h-4 text-yellow-300"></i>
+                                <span>Blockchain Audit</span>
                             </a>
                             <a href="{{ route('settings.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold {{ request()->routeIs('settings.*') ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white' : 'text-purple-200 hover:bg-purple-900/50' }}">
                                 <i data-lucide="settings" class="w-4 h-4"></i>

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardController;
@@ -45,6 +46,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/finalize', [WorkflowController::class, 'finalize'])->name('finalize');
         Route::get('/api/clients', [WorkflowController::class, 'apiClients'])->name('api.clients');
         Route::post('/api/clients', [WorkflowController::class, 'apiStoreClient'])->name('api.clients.store');
+        Route::post('/api/rfid-scan', [WorkflowController::class, 'apiRfidScan'])->name('api.rfid.scan');
     });
 
     // 3. Client Database Module
@@ -88,5 +90,13 @@ Route::middleware('auth')->group(function () {
     Route::prefix('settings')->name('settings.')->group(function () {
         Route::get('/', [SettingController::class, 'index'])->name('index');
         Route::post('/', [SettingController::class, 'update'])->name('update');
+    });
+
+    // 8. Blockchain Sales Audit Trail & Access Log
+    Route::prefix('admin/blockchain-audit')->name('admin.audit.')->group(function () {
+        Route::get('/', [AuditLogController::class, 'index'])->name('index');
+        Route::post('/verify', [AuditLogController::class, 'verify'])->name('verify');
+        Route::post('/sync', [AuditLogController::class, 'sync'])->name('sync');
+        Route::get('/{block}', [AuditLogController::class, 'show'])->name('show');
     });
 });

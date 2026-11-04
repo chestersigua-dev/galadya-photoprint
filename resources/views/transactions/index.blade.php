@@ -39,13 +39,23 @@
             <p class="text-xs text-slate-500">Review past client bills, reprint POS thermal receipts, and redownload 4R files.</p>
         </div>
 
-        <a 
-            href="{{ route('workflow.start') }}" 
-            class="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 via-pink-500 to-yellow-400 hover:opacity-95 text-white font-bold px-4 py-2.5 rounded-xl shadow-md shadow-purple-600/25 text-xs transition"
-        >
-            <i data-lucide="camera" class="w-4 h-4 text-yellow-200"></i>
-            <span>New Shoot Session</span>
-        </a>
+        <div class="flex items-center gap-2">
+            <a 
+                href="{{ route('admin.audit.index') }}" 
+                class="inline-flex items-center gap-1.5 bg-purple-100 hover:bg-purple-200 text-purple-900 border border-purple-200 font-bold px-3.5 py-2.5 rounded-xl text-xs transition"
+            >
+                <i data-lucide="shield-check" class="w-4 h-4 text-purple-700"></i>
+                <span>Blockchain Audit</span>
+            </a>
+
+            <a 
+                href="{{ route('workflow.start') }}" 
+                class="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 via-pink-500 to-yellow-400 hover:opacity-95 text-white font-bold px-4 py-2.5 rounded-xl shadow-md shadow-purple-600/25 text-xs transition"
+            >
+                <i data-lucide="camera" class="w-4 h-4 text-yellow-200"></i>
+                <span>New Shoot Session</span>
+            </a>
+        </div>
     </div>
 
     <!-- Filter Bar -->
@@ -108,7 +118,15 @@
                             </td>
                             <td class="py-3.5 px-6">
                                 <span class="font-bold text-slate-900 block">{{ $tx->customer->full_name }}</span>
-                                <span class="text-[10px] text-slate-400">{{ $tx->customer->contact_number }}</span>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-[10px] text-slate-400">{{ $tx->customer->contact_number }}</span>
+                                    @if($tx->rfid_scanned)
+                                        <span class="inline-flex items-center gap-1 text-[9px] font-mono font-bold text-purple-800 bg-purple-100 border border-purple-200 px-1.5 py-0.2 rounded">
+                                            <i data-lucide="credit-card" class="w-2.5 h-2.5 text-pink-600"></i>
+                                            {{ $tx->rfid_code ?? 'RFID' }} (+1 pt)
+                                        </span>
+                                    @endif
+                                </div>
                             </td>
                             <td class="py-3.5 px-6">
                                 <span class="px-2.5 py-0.5 rounded-full bg-purple-100 font-medium text-purple-800 text-[11px]">
@@ -218,6 +236,34 @@
                     <span class="text-slate-900">GRAND TOTAL</span>
                     <span class="text-purple-700" x-text="receiptData?.grand_total"></span>
                 </div>
+                <template x-if="receiptData?.rfid_scanned">
+                    <div class="space-y-0.5 text-[11px] pt-1.5 border-t border-dashed border-purple-200">
+                        <div class="flex justify-between">
+                            <span>Loyalty Card:</span>
+                            <span class="font-bold font-mono" x-text="receiptData?.rfid_used || 'Active'"></span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Points Earned:</span>
+                            <span class="font-bold text-purple-700">+1 pt</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Total Points:</span>
+                            <span class="font-bold" x-text="(receiptData?.total_points || 0) + ' pts'"></span>
+                        </div>
+                    </div>
+                </template>
+                <template x-if="receiptData?.blockchain_block">
+                    <div class="space-y-0.5 text-[10px] pt-1.5 border-t border-dashed border-purple-200 font-mono">
+                        <div class="flex justify-between items-center text-purple-950 font-bold">
+                            <span>Blockchain Block:</span>
+                            <span x-text="receiptData?.blockchain_block"></span>
+                        </div>
+                        <div class="flex justify-between items-center text-slate-500">
+                            <span>Ledger Hash:</span>
+                            <span class="text-[9px]" x-text="receiptData?.blockchain_hash"></span>
+                        </div>
+                    </div>
+                </template>
                 <div class="text-[10px] text-purple-700/80 text-center pt-2 italic" x-text="receiptData?.footer_text"></div>
             </div>
 

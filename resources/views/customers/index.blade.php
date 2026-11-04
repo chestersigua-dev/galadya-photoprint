@@ -86,6 +86,7 @@
                 <thead>
                     <tr class="bg-purple-50/70 border-b border-purple-100 text-[11px] uppercase tracking-wider text-purple-900/70 font-semibold">
                         <th class="py-3.5 px-6">Client Name</th>
+                        <th class="py-3.5 px-6">RFID / Loyalty Card</th>
                         <th class="py-3.5 px-6">Contact Number</th>
                         <th class="py-3.5 px-6">Email</th>
                         <th class="py-3.5 px-6 text-center">Total Sessions</th>
@@ -106,6 +107,28 @@
                                         <p class="text-[10px] text-slate-400">{{ $customer->address ?? 'Metro Manila' }}</p>
                                     </div>
                                 </div>
+                            </td>
+                            <td class="py-4 px-6">
+                                @if ($customer->rfid)
+                                    <div class="flex items-center gap-1.5 flex-wrap">
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-mono font-bold bg-purple-100 text-purple-900 border border-purple-200">
+                                            <i data-lucide="credit-card" class="w-3 h-3 text-pink-500"></i>
+                                            {{ $customer->rfid }}
+                                        </span>
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-200" title="Loyalty Points">
+                                            ⭐ {{ $customer->points ?? 0 }} pts
+                                        </span>
+                                    </div>
+                                @else
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="text-[11px] text-slate-400 italic">No card linked</span>
+                                        @if(($customer->points ?? 0) > 0)
+                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
+                                                ⭐ {{ $customer->points }} pts
+                                            </span>
+                                        @endif
+                                    </div>
+                                @endif
                             </td>
                             <td class="py-4 px-6 font-mono font-medium text-slate-800">
                                 {{ $customer->contact_number }}
@@ -134,7 +157,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="py-12 text-center text-slate-400 text-xs">
+                            <td colspan="7" class="py-12 text-center text-slate-400 text-xs">
                                 <i data-lucide="users" class="w-8 h-8 text-purple-300 mx-auto mb-2 opacity-50"></i>
                                 No clients found matching your search.
                             </td>
@@ -197,19 +220,37 @@
                 <template x-if="!loadingDetails && activeCustomer">
                     <div class="space-y-6">
                         <!-- Key Stats Cards -->
-                        <div class="grid grid-cols-2 gap-4">
-                            <div class="bg-gradient-to-br from-purple-50 to-purple-100/70 border border-purple-200 p-4 rounded-xl">
-                                <span class="text-[10px] font-semibold text-purple-700 uppercase tracking-wider">Total Sessions</span>
-                                <p class="text-2xl font-black text-purple-950 mt-1" x-text="activeCustomer.total_sessions_count"></p>
+                        <div class="grid grid-cols-3 gap-3">
+                            <div class="bg-gradient-to-br from-purple-50 to-purple-100/70 border border-purple-200 p-3.5 rounded-xl text-center">
+                                <span class="text-[9px] font-bold text-purple-700 uppercase tracking-wider block">Sessions</span>
+                                <p class="text-xl font-black text-purple-950 mt-0.5" x-text="activeCustomer.total_sessions_count"></p>
                             </div>
-                            <div class="bg-gradient-to-br from-pink-50 to-pink-100/70 border border-pink-200 p-4 rounded-xl">
-                                <span class="text-[10px] font-semibold text-pink-700 uppercase tracking-wider">Lifetime Spend</span>
-                                <p class="text-2xl font-black text-pink-950 mt-1" x-text="activeCustomer.lifetime_spend"></p>
+                            <div class="bg-gradient-to-br from-pink-50 to-pink-100/70 border border-pink-200 p-3.5 rounded-xl text-center">
+                                <span class="text-[9px] font-bold text-pink-700 uppercase tracking-wider block">Lifetime Spend</span>
+                                <p class="text-sm font-black text-pink-950 mt-1 truncate" x-text="activeCustomer.lifetime_spend"></p>
+                            </div>
+                            <div class="bg-gradient-to-br from-yellow-50 to-amber-100/70 border border-yellow-200 p-3.5 rounded-xl text-center">
+                                <span class="text-[9px] font-bold text-amber-800 uppercase tracking-wider block flex items-center justify-center gap-1">
+                                    <i data-lucide="award" class="w-3 h-3 text-amber-600"></i> Points
+                                </span>
+                                <p class="text-xl font-black text-amber-950 mt-0.5" x-text="(activeCustomer.points || 0) + ' pts'"></p>
                             </div>
                         </div>
 
                         <!-- Contact Details Block -->
                         <div class="bg-white p-4 rounded-xl border border-purple-100 shadow-xs space-y-2 text-xs">
+                            <div class="flex items-center justify-between">
+                                <span class="text-slate-500 font-medium">RFID Card (Loyalty & Discount):</span>
+                                <template x-if="activeCustomer.rfid">
+                                    <span class="inline-flex items-center gap-1 font-mono font-bold text-purple-900 bg-purple-100 border border-purple-200 px-2 py-0.5 rounded-md">
+                                        <i data-lucide="credit-card" class="w-3 h-3 text-pink-500"></i>
+                                        <span x-text="activeCustomer.rfid"></span>
+                                    </span>
+                                </template>
+                                <template x-if="!activeCustomer.rfid">
+                                    <span class="text-slate-400 italic">No RFID card linked</span>
+                                </template>
+                            </div>
                             <div class="flex items-center justify-between">
                                 <span class="text-slate-500 font-medium">Contact Number:</span>
                                 <span class="font-bold text-purple-950 font-mono" x-text="activeCustomer.contact_number"></span>
@@ -299,6 +340,20 @@
                         <label class="block text-[11px] font-semibold text-slate-600 mb-1">Last Name *</label>
                         <input type="text" name="last_name" required class="w-full px-3 py-1.5 rounded-lg border border-purple-200 text-xs focus:outline-none focus:border-purple-500">
                     </div>
+                </div>
+
+                <div>
+                    <label class="block text-[11px] font-semibold text-slate-600 mb-1 flex items-center justify-between">
+                        <span>RFID Card UID (Loyalty & Discount Card)</span>
+                        <span class="text-[10px] text-purple-600 font-normal">Optional</span>
+                    </label>
+                    <div class="relative">
+                        <input type="text" name="rfid" placeholder="Scan or enter RFID UID (e.g. GP-RFID-849201)" class="w-full pl-8 pr-3 py-1.5 rounded-lg border border-purple-200 text-xs focus:outline-none focus:border-purple-500 font-mono">
+                        <div class="absolute left-2.5 top-2 text-purple-500 pointer-events-none">
+                            <i data-lucide="credit-card" class="w-3.5 h-3.5"></i>
+                        </div>
+                    </div>
+                    <p class="text-[10px] text-slate-400 mt-0.5">Used as discount card and accumulates 1 loyalty point per checkout scan.</p>
                 </div>
 
                 <div>

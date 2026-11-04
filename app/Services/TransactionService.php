@@ -18,7 +18,8 @@ use Illuminate\Support\Str;
 class TransactionService
 {
     public function __construct(
-        protected PrintLayoutService $printLayoutService
+        protected PrintLayoutService $printLayoutService,
+        protected BlockchainAuditService $blockchainAuditService
     ) {}
 
     /**
@@ -87,6 +88,26 @@ class TransactionService
             $grandTotal = max(0, ($packagePrice + $addonsTotal) - $discountAmount);
             $code = $this->generateTransactionCode();
 
+            // Handle RFID loyalty scan & point accumulation (1 point per scan)
+            $scannedRfid = !empty($data['rfid']) ? trim((string) $data['rfid']) : null;
+            $rfidScanned = !empty($data['rfid_scanned']) || !empty($scannedRfid);
+            $pointsEarned = 0;
+
+            if ($rfidScanned) {
+                // If customer does not have an RFID registered yet, assign it
+                if (empty($customer->rfid) && !empty($scannedRfid)) {
+                    $existing = Customer::where('rfid', $scannedRfid)->where('id', '!=', $customer->id)->first();
+                    if (!$existing) {
+                        $customer->rfid = $scannedRfid;
+                    }
+                }
+
+                // Award 1 loyalty point per RFID scan
+                $customer->points = ((int) $customer->points) + 1;
+                $customer->save();
+                $pointsEarned = 1;
+            }
+
             // 1. Create Transaction
             $transaction = Transaction::create([
                 'transaction_code' => $code,
@@ -98,6 +119,9 @@ class TransactionService
                 'grand_total' => $grandTotal,
                 'payment_method' => $data['payment_method'] ?? 'cash',
                 'payment_status' => $data['payment_status'] ?? 'completed',
+                'rfid_code' => $scannedRfid ?? $customer->rfid,
+                'rfid_scanned' => $rfidScanned,
+                'points_earned' => $pointsEarned,
                 'created_by' => $userId,
                 'notes' => $data['notes'] ?? null,
             ]);
@@ -191,9 +215,31 @@ class TransactionService
                 }
             }
 
+            // 6. Mine & Anchor Sale to Cryptographic Blockchain Audit Ledger
+            $blockchainBlock = $this->blockchainAuditService->recordSaleBlock(
+                $transaction,
+                'sale.committed',
+                [
+                    'source' => 'pos_workflow',
+                    'has_dual_strip' => true,
+                    'has_solo_favorite' => (bool) $soloFilename,
+                ]
+            );
+
             return [
                 'success' => true,
-                'transaction' => $transaction->load(['customer', 'package', 'addons.packageAddon', 'photos']),
+                'transaction' => $transaction->load(['customer', 'package', 'addons.packageAddon', 'photos', 'blockchainLogs']),
+                'rfid_scanned' => (bool) $transaction->rfid_scanned,
+                'rfid_code' => $transaction->rfid_code,
+                'points_earned' => (int) $transaction->points_earned,
+                'total_points' => (int) ($customer->points ?? 0),
+                'blockchain_block' => [
+                    'block_index' => $blockchainBlock->block_index,
+                    'hash' => $blockchainBlock->hash,
+                    'short_hash' => $blockchainBlock->short_hash,
+                    'previous_hash' => $blockchainBlock->previous_hash,
+                    'timestamp' => $blockchainBlock->timestamp,
+                ],
                 'print_photostrip_url' => Storage::disk('public')->url($stripFilename),
                 'print_photostrip_path' => $stripFilename,
                 'print_solo_url' => $soloFilename ? Storage::disk('public')->url($soloFilename) : null,
@@ -230,6 +276,12 @@ class TransactionService
             'grand_total' => $transaction->formatted_grand_total,
             'payment_method' => strtoupper($transaction->payment_method),
             'payment_status' => strtoupper($transaction->payment_status),
+            'rfid_used' => $transaction->rfid_code,
+            'rfid_scanned' => (bool) $transaction->rfid_scanned,
+            'points_earned' => (int) $transaction->points_earned,
+            'total_points' => (int) ($transaction->customer->points ?? 0),
+            'blockchain_block' => $transaction->salesBlock() ? '#' . str_pad((string) $transaction->salesBlock()->block_index, 5, '0', STR_PAD_LEFT) : null,
+            'blockchain_hash' => $transaction->salesBlock()?->short_hash,
             'operator' => $transaction->creator?->name ?? 'Staff',
             'footer_text' => Setting::get('receipt_footer_text', 'Thank you for choosing Galadya Studio!'),
         ];

@@ -8,6 +8,7 @@ use App\Models\PackageAddon;
 use App\Models\Transaction;
 use App\Models\TransactionAddon;
 use App\Models\User;
+use App\Services\BlockchainAuditService;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 
@@ -30,6 +31,8 @@ class CustomerAndTransactionSeeder extends Seeder
             [
                 'first_name' => 'Bea',
                 'last_name' => 'Alonzo',
+                'rfid' => 'GP-RFID-849201',
+                'points' => 5,
                 'email' => 'bea.alonzo@gmail.com',
                 'contact_number' => '09178881234',
                 'address' => 'Quezon City, Metro Manila',
@@ -38,6 +41,8 @@ class CustomerAndTransactionSeeder extends Seeder
             [
                 'first_name' => 'Joshua',
                 'last_name' => 'Garcia',
+                'rfid' => 'GP-RFID-103948',
+                'points' => 3,
                 'email' => 'joshua.g@yahoo.com',
                 'contact_number' => '09187774321',
                 'address' => 'Makati City, Metro Manila',
@@ -46,6 +51,8 @@ class CustomerAndTransactionSeeder extends Seeder
             [
                 'first_name' => 'Kathryn',
                 'last_name' => 'Bernardo',
+                'rfid' => 'GP-RFID-772910',
+                'points' => 8,
                 'email' => 'kathryn.b@gmail.com',
                 'contact_number' => '09205556789',
                 'address' => 'Taguig City, BGC',
@@ -54,6 +61,8 @@ class CustomerAndTransactionSeeder extends Seeder
             [
                 'first_name' => 'Daniel',
                 'last_name' => 'Padilla',
+                'rfid' => 'GP-RFID-482019',
+                'points' => 2,
                 'email' => 'daniel.p@outlook.com',
                 'contact_number' => '09153332211',
                 'address' => 'Pasig City, Metro Manila',
@@ -62,6 +71,8 @@ class CustomerAndTransactionSeeder extends Seeder
             [
                 'first_name' => 'Liza',
                 'last_name' => 'Soberano',
+                'rfid' => 'GP-RFID-990123',
+                'points' => 4,
                 'email' => 'liza.s@gmail.com',
                 'contact_number' => '09192228899',
                 'address' => 'Mandaluyong City',
@@ -131,6 +142,9 @@ class CustomerAndTransactionSeeder extends Seeder
                 }
             }
         }
+
+        // Anchor all seeded transactions onto the immutable cryptographic blockchain ledger
+        app(BlockchainAuditService::class)->syncHistoricalTransactions();
     }
 }
 

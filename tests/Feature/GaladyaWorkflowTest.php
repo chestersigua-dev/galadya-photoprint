@@ -293,4 +293,228 @@ class GaladyaWorkflowTest extends TestCase
             ->assertStatus(200)
             ->assertSee('Staff Users & Role Permissions', false);
     }
+
+    public function test_workflow_inline_client_creation_api(): void
+    {
+        $user = User::first();
+
+        $response = $this->actingAs($user)->postJson(route('workflow.api.clients.store'), [
+            'first_name' => 'Clara',
+            'last_name' => 'delos Santos',
+            'contact_number' => '09181234567',
+            'email' => 'clara@example.com',
+            'notes' => 'Graduation solo shoot',
+        ]);
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'success' => true,
+                'data' => [
+                    'first_name' => 'Clara',
+                    'last_name' => 'delos Santos',
+                    'full_name' => 'Clara delos Santos',
+                    'contact_number' => '09181234567',
+                ]
+            ]);
+
+        $this->assertDatabaseHas('customers', [
+            'first_name' => 'Clara',
+            'last_name' => 'delos Santos',
+            'contact_number' => '09181234567',
+        ]);
+    }
+
+    public function test_workflow_client_search_finds_database_clients(): void
+    {
+        $user = User::first();
+
+        // Create a unique client in the database (as if added via Client Database)
+        $client = Customer::create([
+            'first_name' => 'Zendaya',
+            'last_name' => 'Coleman',
+            'contact_number' => '09998887777',
+            'email' => 'zendaya@example.com',
+        ]);
+
+        $response = $this->actingAs($user)->getJson(route('workflow.api.clients', ['q' => 'Zendaya']));
+
+        $response->assertStatus(200)
+            ->assertJson(['success' => true]);
+
+        $data = $response->json('data');
+        $this->assertNotEmpty($data);
+        $this->assertEquals($client->id, $data[0]['id']);
+        $this->assertEquals('Zendaya Coleman', $data[0]['full_name']);
+
+        // Test searching full name with space (e.g. 'Zendaya Coleman')
+        $fullNameRes = $this->actingAs($user)->getJson(route('workflow.api.clients', ['q' => 'Zendaya Coleman']));
+        $fullNameRes->assertStatus(200);
+        $fullNameData = $fullNameRes->json('data');
+        $this->assertNotEmpty($fullNameData);
+        $this->assertEquals($client->id, $fullNameData[0]['id']);
+
+        // Test searching in Client Database index with full name
+        $clientIndexRes = $this->actingAs($user)->get(route('clients.index', ['search' => 'Zendaya Coleman']));
+        $clientIndexRes->assertStatus(200);
+        $clientIndexRes->assertSee('Zendaya Coleman');
+    }
+
+    public function test_workflow_view_has_clean_component_scope_and_interactive_controls(): void
+    {
+        $user = User::first();
+
+        $response = $this->actingAs($user)->get(route('workflow.start'));
+        $response->assertStatus(200);
+
+        $html = $response->getContent();
+
+        // 1. Ensure no nested x-data creates broken child scope on search dropdown
+        $this->assertStringNotContainsString('x-data="{ openDropdown: false }"', $html);
+
+        // 2. Ensure modal trigger has stop propagation and openAddClientModal
+        $this->assertStringContainsString('openAddClientModal()', $html);
+
+        // 3. Ensure packages use selectPackage and isPackageSelected
+        $this->assertStringContainsString('selectPackage(pkg.id)', $html);
+        $this->assertStringContainsString('isPackageSelected(pkg.id)', $html);
+
+        // 4. Ensure add-ons use toggleAddon and immutable reactivity
+        $this->assertStringContainsString('toggleAddon(addon.id)', $html);
+        $this->assertStringContainsString('isAddonSelected(addon.id)', $html);
+
+        // 5. Ensure RFID Discount & Loyalty Card Station exists in the template
+        $this->assertStringContainsString('RFID Discount & Loyalty Card', $html);
+        $this->assertStringContainsString('scanRfidCard()', $html);
+    }
+
+    public function test_client_has_rfid_and_points_attributes(): void
+    {
+        $customer = Customer::create([
+            'first_name' => 'Giselle',
+            'last_name' => 'Aenlle',
+            'rfid' => 'GP-RFID-554433',
+            'points' => 10,
+            'contact_number' => '09171112233',
+        ]);
+
+        $this->assertEquals('GP-RFID-554433', $customer->rfid);
+        $this->assertEquals(10, $customer->points);
+
+        $customer->awardPoints(1);
+        $this->assertEquals(11, $customer->points);
+    }
+
+    public function test_rfid_scan_endpoint_verifies_card_and_returns_client_data(): void
+    {
+        $user = User::first();
+        $customer = Customer::create([
+            'first_name' => 'Catriona',
+            'last_name' => 'Gray',
+            'rfid' => 'GP-RFID-998877',
+            'points' => 4,
+            'contact_number' => '09179998888',
+        ]);
+
+        // 1. Scan registered RFID
+        $response = $this->actingAs($user)->postJson(route('workflow.api.rfid.scan'), [
+            'rfid' => 'GP-RFID-998877',
+            'customer_id' => $customer->id,
+        ]);
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'success' => true,
+                'status' => 'found',
+                'data' => [
+                    'id' => $customer->id,
+                    'full_name' => 'Catriona Gray',
+                    'rfid' => 'GP-RFID-998877',
+                    'points' => 4,
+                    'matches_current_customer' => true,
+                ]
+            ]);
+
+        // 2. Scan unassigned RFID with an active customer in session
+        $unassignedRes = $this->actingAs($user)->postJson(route('workflow.api.rfid.scan'), [
+            'rfid' => 'GP-RFID-NEWCARD',
+            'customer_id' => $customer->id,
+        ]);
+
+        $unassignedRes->assertStatus(200)
+            ->assertJson([
+                'success' => true,
+                'status' => 'unassigned_can_link',
+                'data' => [
+                    'id' => $customer->id,
+                    'rfid' => 'GP-RFID-NEWCARD',
+                    'is_new_registration' => true,
+                ]
+            ]);
+    }
+
+    public function test_checkout_with_rfid_scan_accumulates_one_point_and_records_transaction(): void
+    {
+        $user = User::first();
+        $customer = Customer::create([
+            'first_name' => 'Pia',
+            'last_name' => 'Wurtzbach',
+            'rfid' => 'GP-RFID-PIA01',
+            'points' => 7,
+            'contact_number' => '09177776655',
+        ]);
+
+        $package = Package::first();
+
+        $previewRelPath = 'previews/test_rfid_checkout.jpg';
+        $fullPath = storage_path("app/public/{$previewRelPath}");
+        if (!file_exists(dirname($fullPath))) {
+            mkdir(dirname($fullPath), 0755, true);
+        }
+        $img = imagecreatetruecolor(800, 1200);
+        imagejpeg($img, $fullPath);
+        imagedestroy($img);
+
+        $payload = [
+            'customer_id' => $customer->id,
+            'package_id' => $package->id,
+            'payment_method' => 'cash',
+            'payment_status' => 'completed',
+            'discount_amount' => 50.00, // Loyalty discount applied
+            'rfid' => 'GP-RFID-PIA01',
+            'rfid_scanned' => true,
+            'photos' => [
+                [
+                    'original_filename' => 'test.jpg',
+                    'preview_path' => $previewRelPath,
+                    'storage_path' => $previewRelPath,
+                    'is_starred' => true,
+                    'is_favorite' => true,
+                ]
+            ]
+        ];
+
+        $response = $this->actingAs($user)->postJson(route('workflow.finalize'), $payload);
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'success' => true,
+                'data' => [
+                    'rfid_scanned' => true,
+                    'points_earned' => 1,
+                    'total_points' => 8,
+                ]
+            ]);
+
+        // Verify customer accumulated +1 point
+        $customer->refresh();
+        $this->assertEquals(8, $customer->points, 'Customer points must increase by exactly 1 on RFID scan');
+
+        // Verify transaction record contains RFID and points
+        $this->assertDatabaseHas('transactions', [
+            'customer_id' => $customer->id,
+            'rfid_code' => 'GP-RFID-PIA01',
+            'rfid_scanned' => 1,
+            'points_earned' => 1,
+        ]);
+    }
 }

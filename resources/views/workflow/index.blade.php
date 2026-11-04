@@ -73,7 +73,7 @@
                         <!-- Add Client Modal Trigger -->
                         <button 
                             type="button" 
-                            @click="showAddClientModal = true" 
+                            @click.stop="openAddClientModal()" 
                             class="inline-flex items-center gap-1.5 bg-purple-50 hover:bg-purple-100 text-purple-900 text-xs font-bold px-3 py-1.5 rounded-xl border border-purple-200 transition"
                         >
                             <i data-lucide="user-plus" class="w-4 h-4 text-purple-600"></i>
@@ -82,57 +82,104 @@
                     </div>
 
                     <!-- Client Search Input & Dropdown -->
-                    <div class="relative" x-data="{ openDropdown: false }">
+                    <div class="relative" @click.outside="openDropdown = false">
                         <label class="block text-xs font-semibold text-slate-600 mb-1">Search Client (Name, Phone, Email)</label>
                         <div class="relative">
                             <input 
+                                id="client-search-input"
                                 type="text" 
                                 x-model="clientQuery"
-                                @focus="openDropdown = true"
-                                @input="searchClients()"
+                                @focus="openDropdown = true; searchClients()"
+                                @input="openDropdown = true; searchClients()"
                                 placeholder="Type client name e.g. Bea Alonzo or 0917..."
                                 class="w-full px-4 py-2.5 rounded-xl bg-purple-50/30 border border-purple-200 text-sm focus:outline-none focus:border-purple-500 focus:bg-white transition"
                             >
-                            <div class="absolute right-3 top-3 text-purple-400">
-                                <i data-lucide="search" class="w-4 h-4"></i>
+                            <div class="absolute right-3 top-3 text-purple-400 flex items-center gap-1">
+                                <span x-show="isSearchingClients" class="w-4 h-4 border-2 border-purple-600 border-t-transparent rounded-full animate-spin inline-block"></span>
+                                <i x-show="!isSearchingClients" data-lucide="search" class="w-4 h-4"></i>
                             </div>
                         </div>
 
                         <!-- Dropdown Results -->
                         <div 
-                            x-show="openDropdown && filteredClients.length > 0" 
-                            @click.outside="openDropdown = false"
-                            class="absolute z-20 left-0 right-0 mt-1 max-h-60 overflow-y-auto bg-white border border-purple-200 rounded-xl shadow-xl divide-y divide-purple-50"
+                            x-show="openDropdown && (filteredClients.length > 0 || isSearchingClients || (clientQuery && clientQuery.trim().length > 0))" 
+                            class="absolute z-20 left-0 right-0 mt-1 max-h-64 overflow-y-auto bg-white border border-purple-200 rounded-xl shadow-xl divide-y divide-purple-50"
                         >
+                            <!-- Searching Indicator -->
+                            <div x-show="isSearchingClients" class="p-3 text-center text-xs text-purple-600 flex items-center justify-center gap-2">
+                                <span class="w-3.5 h-3.5 border-2 border-purple-600 border-t-transparent rounded-full animate-spin"></span>
+                                <span>Searching client database...</span>
+                            </div>
+
+                            <!-- List of Clients -->
                             <template x-for="c in filteredClients" :key="c.id">
                                 <div 
-                                    @click="selectCustomer(c); openDropdown = false"
+                                    @click="selectCustomer(c)"
                                     class="p-3 hover:bg-purple-50 cursor-pointer transition flex items-center justify-between"
                                 >
                                     <div>
-                                        <p class="text-xs font-bold text-purple-950" x-text="c.full_name"></p>
-                                        <p class="text-[11px] text-slate-500" x-text="c.contact_number + (c.email ? ' * ' + c.email : '')"></p>
+                                        <p class="text-xs font-bold text-purple-950" x-text="c.full_name || (c.first_name + ' ' + c.last_name)"></p>
+                                        <div class="flex items-center gap-1.5 mt-0.5">
+                                            <p class="text-[11px] text-slate-500" x-text="(c.contact_number || '') + (c.email ? ' • ' + c.email : '')"></p>
+                                            <template x-if="c.rfid">
+                                                <span class="inline-flex items-center gap-1 text-[9px] font-mono font-bold bg-purple-100 text-purple-800 px-1.5 py-0.2 rounded border border-purple-200">
+                                                    <i data-lucide="credit-card" class="w-2.5 h-2.5 text-pink-500"></i>
+                                                    <span x-text="c.rfid"></span>
+                                                </span>
+                                            </template>
+                                        </div>
                                     </div>
-                                    <span class="text-[10px] bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full font-bold" x-text="(c.total_sessions_count || 0) + ' sessions'"></span>
+                                    <div class="text-right shrink-0">
+                                        <span class="text-[10px] bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full font-bold block" x-text="(c.total_sessions_count || 0) + ' sessions'"></span>
+                                        <span class="text-[9px] text-amber-700 font-bold mt-0.5 block" x-text="'⭐ ' + (c.points || 0) + ' pts'"></span>
+                                    </div>
                                 </div>
                             </template>
+
+                            <!-- Empty Search / Not Found State with Quick Register Prompt -->
+                            <div x-show="!isSearchingClients && filteredClients.length === 0 && clientQuery && clientQuery.trim().length > 0" class="p-4 text-center">
+                                <div class="w-8 h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mx-auto mb-2">
+                                    <i data-lucide="user-x" class="w-4 h-4"></i>
+                                </div>
+                                <p class="text-xs font-semibold text-slate-800">No client found matching "<span class="text-purple-700" x-text="clientQuery"></span>"</p>
+                                <p class="text-[11px] text-slate-500 mb-3">Register them now to proceed with this session.</p>
+                                <button 
+                                    type="button" 
+                                    @click.stop="openAddClientModal(clientQuery)"
+                                    class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-purple-700 to-pink-600 hover:from-purple-600 hover:to-pink-500 text-white font-bold text-xs shadow-sm transition"
+                                >
+                                    <i data-lucide="user-plus" class="w-3.5 h-3.5"></i>
+                                    <span>Register "<span x-text="clientQuery"></span>"</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
 
                     <!-- Active Selected Customer Pill -->
                     <div x-show="selectedCustomer" class="mt-4 p-4 rounded-xl bg-purple-50 border border-purple-200 flex items-center justify-between">
                         <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-purple-600 to-pink-500 text-white font-bold flex items-center justify-center text-sm shadow-sm">
-                                <span x-text="selectedCustomer ? selectedCustomer.full_name.charAt(0) : '?'"></span>
+                            <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-purple-600 to-pink-500 text-white font-bold flex items-center justify-center text-sm shadow-sm shrink-0">
+                                <span x-text="selectedCustomer ? (selectedCustomer.full_name || selectedCustomer.first_name || '?').charAt(0) : '?'"></span>
                             </div>
                             <div>
-                                <p class="text-sm font-bold text-purple-950" x-text="selectedCustomer?.full_name"></p>
-                                <p class="text-xs text-purple-700" x-text="selectedCustomer?.contact_number + (selectedCustomer?.email ? ' * ' + selectedCustomer?.email : '')"></p>
+                                <p class="text-sm font-bold text-purple-950" x-text="selectedCustomer ? (selectedCustomer.full_name || (selectedCustomer.first_name + ' ' + selectedCustomer.last_name)) : ''"></p>
+                                <div class="flex items-center gap-2 mt-0.5 flex-wrap">
+                                    <span class="text-xs text-purple-700" x-text="(selectedCustomer?.contact_number || '') + (selectedCustomer?.email ? ' • ' + selectedCustomer?.email : '')"></span>
+                                    <template x-if="selectedCustomer?.rfid">
+                                        <span class="inline-flex items-center gap-1 text-[10px] font-mono font-bold text-purple-900 bg-purple-200/70 px-2 py-0.5 rounded-md">
+                                            <i data-lucide="credit-card" class="w-2.5 h-2.5 text-pink-600"></i>
+                                            <span x-text="selectedCustomer.rfid"></span>
+                                        </span>
+                                    </template>
+                                    <span class="inline-flex items-center gap-1 text-[10px] font-bold text-amber-900 bg-amber-100 border border-amber-200 px-2 py-0.5 rounded-md">
+                                        ⭐ <span x-text="(selectedCustomer?.points || 0) + ' pts'"></span>
+                                    </span>
+                                </div>
                             </div>
                         </div>
                         <button 
                             type="button" 
-                            @click="selectedCustomer = null; clientQuery = ''" 
+                            @click="changeSelectedCustomer()" 
                             class="text-xs text-pink-600 hover:text-pink-800 font-bold px-2 py-1"
                         >
                             Change
@@ -150,17 +197,11 @@
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <template x-for="pkg in packages" :key="pkg.id">
-                            <label 
-                                class="p-4 rounded-2xl border-2 cursor-pointer transition relative flex flex-col justify-between"
-                                :class="selectedPackageId === pkg.id ? 'border-purple-600 bg-purple-50/50 ring-2 ring-purple-500/20 shadow-sm' : 'border-purple-100 hover:border-purple-300 bg-white'"
+                            <div 
+                                @click="selectPackage(pkg.id)"
+                                class="p-4 rounded-2xl border-2 cursor-pointer transition relative flex flex-col justify-between select-none"
+                                :class="isPackageSelected(pkg.id) ? 'border-purple-600 bg-purple-50/50 ring-2 ring-purple-500/20 shadow-sm' : 'border-purple-100 hover:border-purple-300 bg-white'"
                             >
-                                <input 
-                                    type="radio" 
-                                    name="package" 
-                                    :value="pkg.id" 
-                                    x-model="selectedPackageId"
-                                    class="sr-only"
-                                >
                                 <div>
                                     <div class="flex items-center justify-between mb-1">
                                         <h3 class="text-sm font-bold text-slate-900" x-text="pkg.title"></h3>
@@ -170,9 +211,12 @@
                                 </div>
                                 <div class="mt-3 flex items-center justify-between pt-2 border-t border-purple-100 text-[11px] text-slate-400">
                                     <span>Includes Dual Photostrip + Solo 4R</span>
-                                    <i x-show="selectedPackageId === pkg.id" data-lucide="check-circle-2" class="w-4 h-4 text-purple-600"></i>
+                                    <div class="flex items-center gap-1.5">
+                                        <span x-show="isPackageSelected(pkg.id)" class="text-[10px] font-bold text-purple-700 bg-purple-100 px-2 py-0.5 rounded-full">Selected</span>
+                                        <i x-show="isPackageSelected(pkg.id)" data-lucide="check-circle-2" class="w-4 h-4 text-purple-600"></i>
+                                    </div>
                                 </div>
-                            </label>
+                            </div>
                         </template>
                     </div>
                 </div>
@@ -188,34 +232,39 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <template x-for="addon in addons" :key="addon.id">
                             <div 
-                                class="p-3.5 rounded-xl border flex items-center justify-between transition"
-                                :class="isAddonSelected(addon.id) ? 'bg-pink-50/60 border-pink-300 ring-1 ring-pink-400/30' : 'bg-purple-50/30 border-purple-100'"
+                                @click="toggleAddon(addon.id)"
+                                class="p-3.5 rounded-xl border flex items-center justify-between transition cursor-pointer select-none"
+                                :class="isAddonSelected(addon.id) ? 'bg-pink-50/60 border-pink-300 ring-1 ring-pink-400/30' : 'bg-purple-50/30 border-purple-100 hover:border-purple-200'"
                             >
-                                <label class="flex items-center gap-3 cursor-pointer flex-1">
-                                    <input 
-                                        type="checkbox" 
-                                        :checked="isAddonSelected(addon.id)"
-                                        @change="toggleAddon(addon.id)"
-                                        class="w-4 h-4 rounded text-pink-600 border-purple-300 focus:ring-pink-400"
+                                <div class="flex items-center gap-3 flex-1">
+                                    <div 
+                                        class="w-5 h-5 rounded-md flex items-center justify-center transition border"
+                                        :class="isAddonSelected(addon.id) ? 'bg-pink-600 border-pink-600 text-white shadow-xs' : 'bg-white border-purple-300'"
                                     >
+                                        <i x-show="isAddonSelected(addon.id)" data-lucide="check" class="w-3.5 h-3.5 stroke-[3]"></i>
+                                    </div>
                                     <div>
                                         <p class="text-xs font-bold text-slate-900" x-text="addon.title"></p>
                                         <p class="text-[11px] font-bold text-pink-600" x-text="'₱' + parseFloat(addon.price).toFixed(2)"></p>
                                     </div>
-                                </label>
+                                </div>
 
                                 <!-- Qty Counter -->
-                                <div x-show="isAddonSelected(addon.id)" class="flex items-center gap-1 bg-white border border-pink-200 rounded-lg p-0.5">
+                                <div 
+                                    x-show="isAddonSelected(addon.id)" 
+                                    @click.stop
+                                    class="flex items-center gap-1 bg-white border border-pink-200 rounded-lg p-0.5 shadow-xs"
+                                >
                                     <button 
                                         type="button" 
-                                        @click="decreaseAddonQty(addon.id)"
-                                        class="w-6 h-6 rounded flex items-center justify-center text-slate-600 hover:bg-pink-50 text-xs font-bold"
+                                        @click.stop="decreaseAddonQty(addon.id)"
+                                        class="w-6 h-6 rounded flex items-center justify-center text-slate-600 hover:bg-pink-100 hover:text-pink-700 text-xs font-bold transition"
                                     >-</button>
-                                    <span class="w-6 text-center text-xs font-bold text-purple-950" x-text="getAddonQty(addon.id)"></span>
+                                    <span class="w-6 text-center text-xs font-black text-purple-950" x-text="getAddonQty(addon.id)"></span>
                                     <button 
                                         type="button" 
-                                        @click="increaseAddonQty(addon.id)"
-                                        class="w-6 h-6 rounded flex items-center justify-center text-slate-600 hover:bg-pink-50 text-xs font-bold"
+                                        @click.stop="increaseAddonQty(addon.id)"
+                                        class="w-6 h-6 rounded flex items-center justify-center text-slate-600 hover:bg-pink-100 hover:text-pink-700 text-xs font-bold transition"
                                     >+</button>
                                 </div>
                             </div>
@@ -236,7 +285,7 @@
                     <div class="space-y-3 text-xs border-b border-purple-800/80 pb-4">
                         <div class="flex items-center justify-between text-purple-200">
                             <span>Selected Client:</span>
-                            <span class="font-bold text-white" x-text="selectedCustomer ? selectedCustomer.full_name : 'None selected'"></span>
+                            <span class="font-bold text-white" x-text="selectedCustomer ? (selectedCustomer.full_name || (selectedCustomer.first_name + ' ' + selectedCustomer.last_name)) : 'None selected'"></span>
                         </div>
 
                         <div class="flex items-center justify-between text-purple-200">
@@ -750,120 +799,17 @@
                 </template>
             </div>
         </div>
-                                loading="lazy"
-                            >
-
-                            <!-- Ingestion Badge: RAW or Standard -->
-                            <div class="absolute top-2 left-2 flex items-center gap-1">
-                                <span 
-                                    x-show="photo.is_raw"
-                                    class="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-purple-900/90 text-purple-200 shadow-xs border border-purple-700/50"
-                                >
-                                    RAW
-                                </span>
-                                <span 
-                                    x-show="!photo.is_raw"
-                                    class="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-900/80 text-slate-200 shadow-xs"
-                                >
-                                    JPG
-                                </span>
-                            </div>
-
-                            <!-- Strip Slot Badge (Left Strip #1..5, Right Strip #6..10, or Queue) -->
-                            <template x-if="getPhotoSlotInfo(photo)">
-                                <div class="absolute top-2 right-2 flex items-center gap-1 z-10">
-                                    <span 
-                                        class="text-[9px] px-2 py-0.5 rounded-full shadow-md font-bold"
-                                        :class="getPhotoSlotInfo(photo).badgeClass"
-                                        x-text="getPhotoSlotInfo(photo).label"
-                                    ></span>
-                                </div>
-                            </template>
-
-                            <!-- Favorite Glowing Heart Badge (if favorite) -->
-                            <div x-show="photo.is_favorite" class="absolute bottom-2 left-2">
-                                <span class="px-2 py-0.5 rounded-full bg-rose-600 text-white font-bold text-[10px] flex items-center gap-1 shadow-md">
-                                    <i data-lucide="heart" class="w-3 h-3 fill-white text-white"></i>
-                                    <span>Solo 4R</span>
-                                </span>
-                            </div>
-                        </div>
-
-                        <!-- Interactive Control Bar on Each Card -->
-                        <div class="p-2.5 bg-white border-t border-slate-100 flex items-center justify-between">
-                            <div class="truncate max-w-[80px]" :title="photo.original_filename">
-                                <p class="text-[11px] font-bold text-slate-800 truncate" x-text="photo.original_filename"></p>
-                                <p class="text-[9px] text-slate-400 font-mono" x-text="photo.width + 'x' + photo.height"></p>
-                            </div>
-
-                            <div class="flex items-center gap-1 shrink-0">
-                                <!-- Reorder Earlier / Later (if starred) -->
-                                <template x-if="photo.is_starred">
-                                    <div class="flex items-center gap-0.5">
-                                        <button 
-                                            type="button" 
-                                            @click="moveSlotEarlier(photo)"
-                                            class="w-6 h-6 rounded bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center text-[9px] transition cursor-pointer"
-                                            title="Shift earlier"
-                                        >◀</button>
-                                        <button 
-                                            type="button" 
-                                            @click="moveSlotLater(photo)"
-                                            class="w-6 h-6 rounded bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center text-[9px] transition cursor-pointer"
-                                            title="Shift later"
-                                        >▶</button>
-                                    </div>
-                                </template>
-
-                                <!-- Star Toggle Button (★) -->
-                                <button 
-                                    type="button" 
-                                    @click="toggleStar(photo)"
-                                    class="w-7 h-7 rounded-lg flex items-center justify-center text-xs transition cursor-pointer"
-                                    :class="photo.is_starred ? 'bg-amber-100 text-amber-700 font-bold' : 'bg-slate-100 text-slate-400 hover:text-amber-600 hover:bg-amber-50'"
-                                    :title="photo.is_starred ? 'Remove from photostrip selection' : 'Add to 10-photo strip pool'"
-                                >
-                                    ★
-                                </button>
-
-                                <!-- Favorite Selector Button (♥) -->
-                                <button 
-                                    type="button" 
-                                    @click="setFavorite(photo)"
-                                    class="w-7 h-7 rounded-lg flex items-center justify-center text-xs transition cursor-pointer"
-                                    :class="photo.is_favorite ? 'bg-rose-100 text-rose-600 font-bold' : 'bg-slate-100 text-slate-400 hover:text-rose-600 hover:bg-rose-50'"
-                                    title="Set as single favorite for standalone 4R print"
-                                >
-                                    ♥
-                                </button>
-
-                                <!-- Remove Individual Photo Button (Trash) -->
-                                <button 
-                                    type="button" 
-                                    @click="removePhoto(photo)"
-                                    class="w-7 h-7 rounded-lg flex items-center justify-center text-xs text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition cursor-pointer"
-                                    title="Remove this photo from session"
-                                >
-                                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </template>
-            </div>
-        </div>
-
     </div>
 
     <!-- ========================================================================= -->
     <!-- STEP 4 & STEP 5: 4R TEMPLATE PREVIEW & TRANSACTION FINALIZATION -->
     <!-- ========================================================================= -->
     <div x-show="currentStep === 4" x-transition.opacity.duration.300ms class="space-y-6">
-        <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-100">
+        <div class="bg-white p-6 rounded-2xl border border-purple-100 shadow-xs">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-purple-100">
                 <div>
-                    <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
-                        <i data-lucide="printer" class="w-4 h-4 text-amber-500"></i>
+                    <h2 class="text-base font-black text-purple-950 flex items-center gap-2">
+                        <i data-lucide="printer" class="w-4 h-4 text-purple-600"></i>
                         <span>Step 4: Automated 4R Print Template Verification</span>
                     </h2>
                     <p class="text-xs text-slate-500">Verify the high-resolution 4R dual-strip and solo favorite layouts before final POS commit.</p>
@@ -872,7 +818,7 @@
                 <button 
                     type="button" 
                     @click="currentStep = 3"
-                    class="inline-flex items-center gap-1.5 text-xs text-slate-600 hover:text-slate-900 bg-slate-100 px-3 py-1.5 rounded-xl font-medium"
+                    class="inline-flex items-center gap-1.5 text-xs text-purple-700 hover:text-purple-950 bg-purple-50 hover:bg-purple-100 border border-purple-200 px-3 py-1.5 rounded-xl font-bold transition cursor-pointer"
                 >
                     <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
                     <span>Adjust Photo Selections</span>
@@ -900,8 +846,15 @@
                                 </div>
                                 <div class="space-y-1.5">
                                     <template x-for="(p, i) in getStripCol1()" :key="i">
-                                        <div class="aspect-[16/9] bg-slate-200 rounded overflow-hidden relative shadow-2xs">
-                                            <img :src="p?.preview_url" class="w-full h-full object-cover">
+                                        <div class="aspect-[16/9] bg-purple-50/60 rounded-lg overflow-hidden relative shadow-2xs border border-purple-100 flex items-center justify-center">
+                                            <template x-if="p && p.preview_url">
+                                                <img :src="p.preview_url" class="w-full h-full object-cover">
+                                            </template>
+                                            <template x-if="!p || !p.preview_url">
+                                                <div class="flex flex-col items-center justify-center text-center p-1">
+                                                    <span class="text-[9px] font-bold text-purple-400 font-mono" x-text="'Slot #' + (i + 1)"></span>
+                                                </div>
+                                            </template>
                                             <span class="absolute top-0.5 left-0.5 bg-purple-900/80 text-white text-[8px] font-bold px-1 rounded" x-text="'#' + (i + 1)"></span>
                                         </div>
                                     </template>
@@ -921,8 +874,15 @@
                                 </div>
                                 <div class="space-y-1.5">
                                     <template x-for="(p, i) in getStripCol2()" :key="i">
-                                        <div class="aspect-[16/9] bg-slate-200 rounded overflow-hidden relative shadow-2xs">
-                                            <img :src="p?.preview_url" class="w-full h-full object-cover">
+                                        <div class="aspect-[16/9] bg-yellow-50/60 rounded-lg overflow-hidden relative shadow-2xs border border-yellow-200 flex items-center justify-center">
+                                            <template x-if="p && p.preview_url">
+                                                <img :src="p.preview_url" class="w-full h-full object-cover">
+                                            </template>
+                                            <template x-if="!p || !p.preview_url">
+                                                <div class="flex flex-col items-center justify-center text-center p-1">
+                                                    <span class="text-[9px] font-bold text-yellow-700 font-mono" x-text="'Slot #' + (i + 6)"></span>
+                                                </div>
+                                            </template>
                                             <span class="absolute top-0.5 left-0.5 bg-yellow-500 text-purple-950 text-[8px] font-black px-1 rounded" x-text="'#' + (i + 6)"></span>
                                         </div>
                                     </template>
@@ -949,6 +909,13 @@
                         <template x-if="favoritePhoto">
                             <img :src="favoritePhoto.preview_url" class="w-full h-full object-contain">
                         </template>
+                        <template x-if="!favoritePhoto">
+                            <div class="text-center p-6 text-purple-400">
+                                <i data-lucide="heart" class="w-8 h-8 mx-auto text-pink-300 mb-2"></i>
+                                <p class="text-xs font-bold text-purple-900">No favorite photo selected</p>
+                                <p class="text-[10px] text-purple-500 mt-1">Select a favorite photo (♥) in Step 3 to preview solo 4R print.</p>
+                            </div>
+                        </template>
 
                         <!-- Bottom-left authentic logo overlay @ 3% canvas area -->
                         <div class="absolute bottom-4 left-4 bg-white/95 backdrop-blur-xs px-2.5 py-1.5 rounded-xl shadow-md border border-purple-200/60">
@@ -965,6 +932,121 @@
                     <i data-lucide="credit-card" class="w-4 h-4 text-purple-600"></i>
                     <span>Step 5: Finalize Payment & Commit Transaction</span>
                 </h3>
+
+                <!-- RFID Loyalty & Discount Card Scanning Station -->
+                <div class="mb-6 p-4 rounded-2xl border-2 transition-all"
+                    :class="rfidCardScanned ? 'bg-gradient-to-r from-purple-50 via-pink-50 to-amber-50 border-purple-300 shadow-sm' : 'bg-purple-50/40 border-purple-200/80'">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-purple-700 to-pink-600 text-yellow-300 flex items-center justify-center shadow-xs">
+                                <i data-lucide="scan-line" class="w-4 h-4"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-xs font-black text-purple-950 flex items-center gap-2">
+                                    <span>RFID Discount & Loyalty Card</span>
+                                    <span class="text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-full font-black bg-amber-100 text-amber-900 border border-amber-200 shadow-2xs">
+                                        ⭐ +1 Point per Scan
+                                    </span>
+                                </h4>
+                                <p class="text-[11px] text-slate-500">Scan or tap client's RFID card to activate loyalty discount privileges and credit 1 point.</p>
+                            </div>
+                        </div>
+
+                        <!-- Scanned Status Badge -->
+                        <div class="flex items-center gap-2">
+                            <template x-if="rfidCardScanned">
+                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 shadow-xs">
+                                    <i data-lucide="check-circle" class="w-3.5 h-3.5 text-emerald-600"></i>
+                                    <span>RFID Active (+1 Pt on Commit)</span>
+                                </span>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Scanner Input & Controls -->
+                    <div class="flex flex-col sm:flex-row items-stretch gap-2">
+                        <div class="relative flex-1">
+                            <input 
+                                type="text" 
+                                x-model="rfidInput" 
+                                @keydown.enter.prevent="scanRfidCard()"
+                                placeholder="Tap client RFID card on reader or enter card UID..." 
+                                class="w-full pl-9 pr-24 py-2.5 rounded-xl border text-xs font-mono font-bold transition focus:outline-none"
+                                :class="rfidCardScanned ? 'border-purple-400 bg-white text-purple-950' : 'border-purple-200 bg-white text-slate-800 focus:border-purple-500'"
+                            >
+                            <div class="absolute left-3 top-3 text-purple-500">
+                                <i data-lucide="credit-card" class="w-4 h-4"></i>
+                            </div>
+                            <button 
+                                type="button" 
+                                @click="scanRfidCard()"
+                                :disabled="isScanningRfid"
+                                class="absolute right-1.5 top-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-purple-700 to-pink-600 hover:opacity-95 text-white text-[11px] font-bold transition cursor-pointer flex items-center gap-1"
+                            >
+                                <span x-show="isScanningRfid" class="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                                <span x-text="isScanningRfid ? 'Verifying...' : 'Scan / Verify'"></span>
+                            </button>
+                        </div>
+
+                        <template x-if="rfidCardScanned">
+                            <button 
+                                type="button" 
+                                @click="clearRfidScan()"
+                                class="px-3 py-2 rounded-xl bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-700 border border-slate-200 hover:border-rose-200 text-xs font-bold transition cursor-pointer shrink-0"
+                                title="Remove scanned RFID card"
+                            >
+                                Clear Card
+                            </button>
+                        </template>
+                    </div>
+
+                    <!-- Feedback Message / Alert -->
+                    <div x-show="rfidScanMessage" class="mt-2.5 text-xs font-semibold flex items-center gap-2"
+                        :class="rfidScanSuccess ? 'text-emerald-700' : 'text-rose-600'">
+                        <i :data-lucide="rfidScanSuccess ? 'check' : 'alert-circle'" class="w-4 h-4 shrink-0"></i>
+                        <span x-text="rfidScanMessage"></span>
+                    </div>
+
+                    <!-- Active RFID Loyalty Perks Bar (Visible when card is scanned) -->
+                    <template x-if="rfidCardScanned">
+                        <div class="mt-3 pt-3 border-t border-purple-200/60 flex flex-wrap items-center justify-between gap-3 text-xs">
+                            <div class="flex items-center gap-3 flex-wrap">
+                                <div class="flex items-center gap-1.5">
+                                    <span class="text-slate-600 font-medium">Cardholder:</span>
+                                    <strong class="text-purple-950 font-bold" x-text="rfidCustomerName || selectedCustomer?.full_name"></strong>
+                                </div>
+                                <div class="flex items-center gap-1.5 pl-3 border-l border-purple-200">
+                                    <span class="text-slate-600 font-medium">Current Points:</span>
+                                    <span class="font-bold text-amber-700 font-mono" x-text="(rfidCurrentPoints || 0) + ' pts'"></span>
+                                    <span class="text-[10px] text-emerald-800 font-bold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+                                        ➜ <span x-text="((rfidCurrentPoints || 0) + 1) + ' pts'"></span> after checkout (+1 pt)
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Discount Card Quick Perks -->
+                            <div class="flex items-center gap-2">
+                                <span class="text-[11px] font-bold text-purple-900">Discount Perks:</span>
+                                <button 
+                                    type="button" 
+                                    @click="applyLoyaltyDiscountPercent(10)" 
+                                    class="px-2.5 py-1 rounded-lg bg-pink-100 hover:bg-pink-200 text-pink-800 text-[11px] font-bold border border-pink-200 transition cursor-pointer"
+                                    title="Apply 10% studio loyalty discount"
+                                >
+                                    Apply 10% Off
+                                </button>
+                                <button 
+                                    type="button" 
+                                    @click="applyLoyaltyDiscountFixed(50)" 
+                                    class="px-2.5 py-1 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 text-[11px] font-bold border border-amber-200 transition cursor-pointer"
+                                    title="Apply ₱50 loyalty perk"
+                                >
+                                    Apply ₱50 Perk
+                                </button>
+                            </div>
+                        </div>
+                    </template>
+                </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <!-- Payment Method -->
@@ -1019,37 +1101,67 @@
     <div 
         x-show="showAddClientModal" 
         x-transition.opacity 
+        @click.self="showAddClientModal = false"
         class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-purple-950/70 backdrop-blur-xs"
         style="display: none;"
     >
-        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-purple-200" @click.outside="showAddClientModal = false">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-purple-200 relative">
             <div class="flex items-center justify-between mb-4 pb-2 border-b border-purple-100">
-                <h3 class="text-sm font-black text-purple-950">Add New Studio Client</h3>
-                <button @click="showAddClientModal = false" class="text-slate-400 hover:text-slate-600">
+                <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-pink-500"></span>
+                    <h3 class="text-sm font-black text-purple-950">Add New Studio Client</h3>
+                </div>
+                <button type="button" @click="showAddClientModal = false" class="text-slate-400 hover:text-slate-600">
                     <i data-lucide="x" class="w-4 h-4"></i>
                 </button>
             </div>
 
             <form @submit.prevent="submitNewClientInline()" class="space-y-3">
+                <div x-show="clientModalGeneralError" class="p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold" x-text="clientModalGeneralError"></div>
+
                 <div class="grid grid-cols-2 gap-2">
                     <div>
                         <label class="block text-[11px] font-semibold text-slate-600 mb-1">First Name *</label>
-                        <input type="text" x-model="newClient.first_name" required class="w-full px-3 py-1.5 rounded-lg border border-purple-200 text-xs focus:outline-none focus:border-purple-500">
+                        <input type="text" x-model="newClient.first_name" required class="w-full px-3 py-1.5 rounded-lg border text-xs focus:outline-none focus:ring-1" :class="clientModalErrors.first_name ? 'border-rose-400 bg-rose-50/30 focus:border-rose-500 focus:ring-rose-400' : 'border-purple-200 focus:border-purple-500 focus:ring-purple-400'">
+                        <p x-show="clientModalErrors.first_name" class="text-[10px] text-rose-600 mt-1 font-semibold" x-text="clientModalErrors.first_name"></p>
                     </div>
                     <div>
                         <label class="block text-[11px] font-semibold text-slate-600 mb-1">Last Name *</label>
-                        <input type="text" x-model="newClient.last_name" required class="w-full px-3 py-1.5 rounded-lg border border-purple-200 text-xs focus:outline-none focus:border-purple-500">
+                        <input type="text" x-model="newClient.last_name" required class="w-full px-3 py-1.5 rounded-lg border text-xs focus:outline-none focus:ring-1" :class="clientModalErrors.last_name ? 'border-rose-400 bg-rose-50/30 focus:border-rose-500 focus:ring-rose-400' : 'border-purple-200 focus:border-purple-500 focus:ring-purple-400'">
+                        <p x-show="clientModalErrors.last_name" class="text-[10px] text-rose-600 mt-1 font-semibold" x-text="clientModalErrors.last_name"></p>
                     </div>
                 </div>
 
                 <div>
                     <label class="block text-[11px] font-semibold text-slate-600 mb-1">Contact Number *</label>
-                    <input type="text" x-model="newClient.contact_number" required placeholder="0917..." class="w-full px-3 py-1.5 rounded-lg border border-purple-200 text-xs focus:outline-none focus:border-purple-500">
+                    <input type="text" x-model="newClient.contact_number" required placeholder="0917..." class="w-full px-3 py-1.5 rounded-lg border text-xs focus:outline-none focus:ring-1" :class="clientModalErrors.contact_number ? 'border-rose-400 bg-rose-50/30 focus:border-rose-500 focus:ring-rose-400' : 'border-purple-200 focus:border-purple-500 focus:ring-purple-400'">
+                    <p x-show="clientModalErrors.contact_number" class="text-[10px] text-rose-600 mt-1 font-semibold" x-text="clientModalErrors.contact_number"></p>
                 </div>
 
                 <div>
                     <label class="block text-[11px] font-semibold text-slate-600 mb-1">Email Address</label>
-                    <input type="email" x-model="newClient.email" class="w-full px-3 py-1.5 rounded-lg border border-purple-200 text-xs focus:outline-none focus:border-purple-500">
+                    <input type="email" x-model="newClient.email" class="w-full px-3 py-1.5 rounded-lg border text-xs focus:outline-none focus:ring-1" :class="clientModalErrors.email ? 'border-rose-400 bg-rose-50/30 focus:border-rose-500 focus:ring-rose-400' : 'border-purple-200 focus:border-purple-500 focus:ring-purple-400'">
+                    <p x-show="clientModalErrors.email" class="text-[10px] text-rose-600 mt-1 font-semibold" x-text="clientModalErrors.email"></p>
+                </div>
+
+                <div>
+                    <label class="block text-[11px] font-semibold text-slate-600 mb-1 flex items-center justify-between">
+                        <span>RFID Card UID (Loyalty & Discount Card)</span>
+                        <span class="text-[10px] text-purple-600 font-normal">Optional</span>
+                    </label>
+                    <div class="relative">
+                        <input 
+                            type="text" 
+                            x-model="newClient.rfid" 
+                            placeholder="Tap card on reader or enter card UID..." 
+                            class="w-full pl-8 pr-3 py-1.5 rounded-lg border text-xs focus:outline-none focus:ring-1 font-mono"
+                            :class="clientModalErrors.rfid ? 'border-rose-400 bg-rose-50/30 focus:border-rose-500 focus:ring-rose-400' : 'border-purple-200 focus:border-purple-500 focus:ring-purple-400'"
+                        >
+                        <div class="absolute left-2.5 top-2 text-purple-400 pointer-events-none">
+                            <i data-lucide="credit-card" class="w-3.5 h-3.5"></i>
+                        </div>
+                    </div>
+                    <p x-show="clientModalErrors.rfid" class="text-[10px] text-rose-600 mt-1 font-semibold" x-text="clientModalErrors.rfid"></p>
                 </div>
 
                 <div>
@@ -1057,9 +1169,12 @@
                     <input type="text" x-model="newClient.notes" placeholder="e.g. Birthday, graduation shoot" class="w-full px-3 py-1.5 rounded-lg border border-purple-200 text-xs focus:outline-none focus:border-purple-500">
                 </div>
 
-                <div class="pt-2 flex items-center justify-end gap-2">
-                    <button type="button" @click="showAddClientModal = false" class="px-3 py-1.5 text-xs text-slate-600 font-semibold">Cancel</button>
-                    <button type="submit" class="px-4 py-2 bg-gradient-to-r from-purple-700 to-pink-600 hover:from-purple-600 hover:to-pink-500 text-white font-bold text-xs rounded-xl transition">Save & Select</button>
+                <div class="pt-2 flex items-center justify-end gap-2 border-t border-purple-100">
+                    <button type="button" @click="showAddClientModal = false" class="px-3 py-1.5 text-xs text-slate-600 font-semibold hover:text-slate-800">Cancel</button>
+                    <button type="submit" :disabled="isSavingClient" class="px-4 py-2 bg-gradient-to-r from-purple-700 to-pink-600 hover:from-purple-600 hover:to-pink-500 text-white font-bold text-xs rounded-xl transition shadow-xs flex items-center gap-2">
+                        <span x-show="isSavingClient" class="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                        <span>Save & Select Client</span>
+                    </button>
                 </div>
             </form>
         </div>
@@ -1086,7 +1201,44 @@
 
             <span class="text-xs font-bold text-pink-600 uppercase tracking-widest">Transaction Completed</span>
             <h2 class="text-xl font-black text-purple-950 mt-1 mb-1">Session Saved & 4R Prints Ready!</h2>
-            <p class="text-xs text-purple-600/80 mb-6 font-mono font-semibold" x-text="'Tx Code: ' + (finalResult?.transaction?.transaction_code || '')"></p>
+            <p class="text-xs text-purple-600/80 mb-4 font-mono font-semibold" x-text="'Tx Code: ' + (finalResult?.transaction?.transaction_code || '')"></p>
+
+            <!-- RFID Loyalty Points Announcement Banner -->
+            <template x-if="finalResult?.rfid_scanned">
+                <div class="mb-4 p-3.5 rounded-2xl bg-gradient-to-r from-amber-50 to-pink-50 border border-amber-200 flex items-center justify-between text-xs shadow-xs">
+                    <div class="flex items-center gap-2.5 text-left">
+                        <span class="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-400 to-pink-500 text-white flex items-center justify-center font-black text-sm shadow-xs shrink-0">
+                            ⭐
+                        </span>
+                        <div>
+                            <p class="font-black text-amber-950">+1 Loyalty Point Earned!</p>
+                            <p class="text-[10px] text-amber-800 font-mono" x-text="'Card: ' + (finalResult.rfid_code || 'Verified')"></p>
+                        </div>
+                    </div>
+                    <div class="text-right pl-3 border-l border-amber-200 shrink-0">
+                        <span class="text-[10px] text-slate-500 font-medium block">Total Balance</span>
+                        <p class="font-black text-sm text-purple-950" x-text="(finalResult.total_points || 0) + ' pts'"></p>
+                    </div>
+                </div>
+            </template>
+
+            <!-- Blockchain Immutable Anchor Stamp -->
+            <template x-if="finalResult?.blockchain_block">
+                <div class="mb-5 px-3.5 py-2.5 rounded-2xl bg-purple-50/80 border border-purple-200 text-left flex items-center justify-between text-xs shadow-2xs">
+                    <div class="flex items-center gap-2.5">
+                        <div class="p-1.5 rounded-lg bg-emerald-100 text-emerald-700">
+                            <i data-lucide="shield-check" class="w-4 h-4"></i>
+                        </div>
+                        <div>
+                            <span class="font-bold text-purple-950 font-mono text-[11px]" x-text="'Block #' + String(finalResult.blockchain_block.block_index).padStart(5, '0')"></span>
+                            <span class="text-[10px] text-slate-500 font-mono block truncate max-w-[220px]" x-text="finalResult.blockchain_block.short_hash"></span>
+                        </div>
+                    </div>
+                    <span class="text-[9px] font-mono font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full border border-emerald-200 shrink-0">
+                        Ledger Anchored
+                    </span>
+                </div>
+            </template>
 
             <!-- Instant Download & Print Action Buttons -->
             <div class="space-y-3 mb-6">
@@ -1171,6 +1323,22 @@
                     <span>Payment Method:</span>
                     <strong x-text="finalResult.receipt_data.payment_method"></strong>
                 </div>
+                <template x-if="finalResult.receipt_data.rfid_scanned">
+                    <div style="border-top: 1px dashed #000; margin-top: 6px; padding-top: 4px; font-size: 11px;">
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>RFID Card:</span>
+                            <span style="font-weight: bold;" x-text="finalResult.receipt_data.rfid_used || 'Active'"></span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>Points Earned:</span>
+                            <strong style="font-weight: bold;">+1 pt</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>Total Points Balance:</span>
+                            <strong style="font-weight: bold;" x-text="finalResult.receipt_data.total_points + ' pts'"></strong>
+                        </div>
+                    </div>
+                </template>
                 <div style="border-top: 1px dashed #000; margin: 8px 0;"></div>
                 <div style="text-align: center; font-size: 10px; margin-top: 8px;" x-text="finalResult.receipt_data.footer_text"></div>
             </div>
@@ -1193,10 +1361,25 @@ function workflowWizard(config) {
         clientQuery: '',
         filteredClients: config.initialCustomers || [],
         selectedCustomer: null,
-        selectedPackageId: config.initialPackages.length > 0 ? config.initialPackages[0].id : null,
+        selectedPackageId: config.initialPackages.length > 0 ? Number(config.initialPackages[0].id) : null,
         selectedAddonsMap: {}, // addonId => qty
         showAddClientModal: false,
-        newClient: { first_name: '', last_name: '', contact_number: '', email: '', notes: '' },
+        openDropdown: false,
+        isSavingClient: false,
+        isSearchingClients: false,
+        clientModalErrors: {},
+        clientModalGeneralError: '',
+        searchDebounceTimer: null,
+        newClient: { first_name: '', last_name: '', rfid: '', contact_number: '', email: '', notes: '' },
+
+        // RFID Loyalty & Discount Card State (1 point per scan)
+        rfidInput: '',
+        rfidCardScanned: false,
+        rfidCustomerName: '',
+        rfidCurrentPoints: 0,
+        rfidScanMessage: '',
+        rfidScanSuccess: false,
+        isScanningRfid: false,
 
         // Step 2 & 3 State (Photos)
         photos: [],
@@ -1227,7 +1410,7 @@ function workflowWizard(config) {
 
         canNavigateTo(step) {
             if (step === 2 || step === 3) {
-                return this.selectedCustomer && this.selectedPackageId;
+                return !!(this.selectedCustomer && this.selectedPackageId);
             }
             if (step === 4) {
                 return this.starredCount > 0 && this.favoritePhoto !== null;
@@ -1235,86 +1418,220 @@ function workflowWizard(config) {
             return true;
         },
 
-        // Client search
+        openAddClientModal(prefillName = '') {
+            let fn = '';
+            let ln = '';
+            if (prefillName && typeof prefillName === 'string') {
+                const parts = prefillName.trim().split(/\s+/);
+                if (parts.length === 1) {
+                    fn = parts[0];
+                } else if (parts.length > 1) {
+                    fn = parts[0];
+                    ln = parts.slice(1).join(' ');
+                }
+            }
+            this.newClient = { first_name: fn, last_name: ln, rfid: '', contact_number: '', email: '', notes: '' };
+            this.clientModalErrors = {};
+            this.clientModalGeneralError = '';
+            this.isSavingClient = false;
+            this.showAddClientModal = true;
+            this.openDropdown = false;
+            setTimeout(() => window.initLucideIcons && window.initLucideIcons(), 50);
+        },
+
+        changeSelectedCustomer() {
+            this.selectedCustomer = null;
+            this.clientQuery = '';
+            this.filteredClients = this.customers;
+            this.rfidInput = '';
+            this.rfidCardScanned = false;
+            this.rfidCustomerName = '';
+            this.rfidCurrentPoints = 0;
+            this.openDropdown = true;
+            setTimeout(() => {
+                const input = document.getElementById('client-search-input');
+                if (input) input.focus();
+            }, 50);
+        },
+
+        // Client search with local cache + async backend lookup
         searchClients() {
-            const q = this.clientQuery.toLowerCase();
+            const q = (this.clientQuery || '').trim().toLowerCase();
             if (!q) {
                 this.filteredClients = this.customers;
+                this.isSearchingClients = false;
                 return;
             }
-            this.filteredClients = this.customers.filter(c => 
-                c.first_name.toLowerCase().includes(q) || 
-                c.last_name.toLowerCase().includes(q) || 
-                (c.contact_number && c.contact_number.includes(q)) ||
-                (c.email && c.email.toLowerCase().includes(q))
-            );
+
+            // 1. Instant local filter
+            const localMatches = this.customers.filter(c => {
+                const fn = (c.first_name || '').toLowerCase();
+                const ln = (c.last_name || '').toLowerCase();
+                const full = (c.full_name || `${fn} ${ln}`).toLowerCase();
+                const ph = (c.contact_number || '');
+                const em = (c.email || '').toLowerCase();
+                const rf = (c.rfid || '').toLowerCase();
+                return fn.includes(q) || ln.includes(q) || full.includes(q) || ph.includes(q) || em.includes(q) || rf.includes(q);
+            });
+
+            this.filteredClients = localMatches;
+            this.isSearchingClients = true;
+
+            // 2. Async backend query to search all clients in database
+            clearTimeout(this.searchDebounceTimer);
+            this.searchDebounceTimer = setTimeout(() => {
+                fetch(`{{ route('workflow.api.clients') }}?q=${encodeURIComponent(q)}`, {
+                    headers: { 'Accept': 'application/json' }
+                })
+                .then(r => r.json())
+                .then(res => {
+                    this.isSearchingClients = false;
+                    if (res && res.success && Array.isArray(res.data)) {
+                        const map = new Map();
+                        // Put local matches first
+                        this.filteredClients.forEach(c => map.set(c.id, c));
+                        // Add database matches
+                        res.data.forEach(c => map.set(c.id, c));
+                        this.filteredClients = Array.from(map.values());
+                    }
+                })
+                .catch(() => {
+                    this.isSearchingClients = false;
+                });
+            }, 180);
         },
 
         selectCustomer(cust) {
+            if (!cust) return;
+            if (!cust.full_name) {
+                cust.full_name = `${cust.first_name || ''} ${cust.last_name || ''}`.trim() || `Client #${cust.id}`;
+            }
             this.selectedCustomer = cust;
             this.clientQuery = cust.full_name;
+            this.openDropdown = false;
+
+            // If selected customer already has an RFID registered, initialize card state
+            if (cust.rfid) {
+                this.rfidInput = cust.rfid;
+                this.rfidCustomerName = cust.full_name;
+                this.rfidCurrentPoints = Number(cust.points || 0);
+            } else {
+                this.rfidInput = '';
+                this.rfidCustomerName = '';
+                this.rfidCurrentPoints = Number(cust.points || 0);
+            }
         },
 
         submitNewClientInline() {
+            this.clientModalErrors = {};
+            this.clientModalGeneralError = '';
+
+            if (!this.newClient.first_name) {
+                this.clientModalErrors.first_name = 'First name is required.';
+            }
+            if (!this.newClient.last_name) {
+                this.clientModalErrors.last_name = 'Last name is required.';
+            }
+            if (!this.newClient.contact_number) {
+                this.clientModalErrors.contact_number = 'Contact number is required.';
+            }
+            if (Object.keys(this.clientModalErrors).length > 0) {
+                return;
+            }
+
+            this.isSavingClient = true;
             fetch('{{ route("workflow.api.clients.store") }}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
                 },
                 body: JSON.stringify(this.newClient)
             })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    this.customers.unshift(data.data);
-                    this.selectCustomer(data.data);
+            .then(async (res) => {
+                this.isSavingClient = false;
+                const data = await res.json().catch(() => null);
+                if (res.ok && data && data.success) {
+                    const client = data.data;
+                    if (!client.full_name) {
+                        client.full_name = `${client.first_name || ''} ${client.last_name || ''}`.trim();
+                    }
+                    this.customers = [client, ...this.customers.filter(c => c.id !== client.id)];
+                    this.filteredClients = [client, ...this.filteredClients.filter(c => c.id !== client.id)];
+                    this.selectCustomer(client);
                     this.showAddClientModal = false;
-                    this.newClient = { first_name: '', last_name: '', contact_number: '', email: '', notes: '' };
+                    this.newClient = { first_name: '', last_name: '', rfid: '', contact_number: '', email: '', notes: '' };
+                    this.clientModalErrors = {};
+                    this.clientModalGeneralError = '';
                 } else {
-                    alert('Error saving client: ' + (data.message || 'Validation failed.'));
+                    if (data?.errors) {
+                        this.clientModalErrors = data.errors;
+                    } else {
+                        this.clientModalGeneralError = data?.message || 'Failed to register client. Please check the fields.';
+                    }
                 }
             })
-            .catch(err => alert('Network error: ' + err));
+            .catch(err => {
+                this.isSavingClient = false;
+                this.clientModalGeneralError = 'Network error: ' + err.message;
+            });
         },
 
         // Package helpers
+        selectPackage(id) {
+            this.selectedPackageId = Number(id);
+        },
+        isPackageSelected(id) {
+            return Number(this.selectedPackageId) === Number(id);
+        },
         getSelectedPackage() {
-            return this.packages.find(p => p.id === this.selectedPackageId);
+            return this.packages.find(p => Number(p.id) === Number(this.selectedPackageId)) || null;
         },
         getPackagePrice() {
             const pkg = this.getSelectedPackage();
             return pkg ? parseFloat(pkg.base_price) : 0;
         },
 
-        // Addons helpers
+        // Addons helpers (Immutably updated for guaranteed Vue/Alpine Proxy reactivity)
         isAddonSelected(id) {
-            return !!this.selectedAddonsMap[id];
+            const numId = Number(id);
+            return typeof this.selectedAddonsMap[numId] === 'number' && this.selectedAddonsMap[numId] > 0;
         },
         toggleAddon(id) {
-            if (this.selectedAddonsMap[id]) {
-                delete this.selectedAddonsMap[id];
+            const numId = Number(id);
+            const copy = { ...this.selectedAddonsMap };
+            if (copy[numId]) {
+                delete copy[numId];
             } else {
-                this.selectedAddonsMap[id] = 1;
+                copy[numId] = 1;
             }
+            this.selectedAddonsMap = copy;
         },
         getAddonQty(id) {
-            return this.selectedAddonsMap[id] || 1;
+            const numId = Number(id);
+            return this.selectedAddonsMap[numId] || 1;
         },
         increaseAddonQty(id) {
-            this.selectedAddonsMap[id] = (this.selectedAddonsMap[id] || 1) + 1;
+            const numId = Number(id);
+            const copy = { ...this.selectedAddonsMap };
+            copy[numId] = (copy[numId] || 1) + 1;
+            this.selectedAddonsMap = copy;
         },
         decreaseAddonQty(id) {
-            if (this.selectedAddonsMap[id] > 1) {
-                this.selectedAddonsMap[id]--;
+            const numId = Number(id);
+            const copy = { ...this.selectedAddonsMap };
+            if (copy[numId] > 1) {
+                copy[numId]--;
             } else {
-                delete this.selectedAddonsMap[id];
+                delete copy[numId];
             }
+            this.selectedAddonsMap = copy;
         },
         getAddonsTotal() {
             let total = 0;
             for (const [addonId, qty] of Object.entries(this.selectedAddonsMap)) {
-                const item = this.addons.find(a => a.id == addonId);
+                const item = this.addons.find(a => Number(a.id) === Number(addonId));
                 if (item) {
                     total += parseFloat(item.price) * qty;
                 }
@@ -1479,7 +1796,9 @@ function workflowWizard(config) {
         // Photostrip Column & Slot Slicers (Requirement: First 5 photos on Left Part, Second 5 on Right Part)
         getStarredPhotos() {
             const starred = this.photos.filter(p => p.is_starred);
-            if (starred.length === 0) return [];
+            if (starred.length === 0) {
+                return Array(10).fill(null);
+            }
             // Pad up to 10 if needed
             let list = [...starred];
             while (list.length < 10) {
@@ -1590,6 +1909,75 @@ function workflowWizard(config) {
             setTimeout(() => window.initLucideIcons && window.initLucideIcons(), 50);
         },
 
+        // RFID Loyalty & Discount Card Methods
+        scanRfidCard() {
+            const code = this.rfidInput ? this.rfidInput.trim() : '';
+            if (!code) {
+                this.rfidScanSuccess = false;
+                this.rfidScanMessage = 'Please swipe or scan a valid RFID card UID.';
+                return;
+            }
+
+            this.isScanningRfid = true;
+            this.rfidScanMessage = '';
+
+            fetch('{{ route("workflow.api.rfid.scan") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                },
+                body: JSON.stringify({
+                    rfid: code,
+                    customer_id: this.selectedCustomer?.id || null
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                this.isScanningRfid = false;
+                if (data.success) {
+                    this.rfidCardScanned = true;
+                    this.rfidScanSuccess = true;
+                    this.rfidScanMessage = data.message || 'RFID card verified! +1 loyalty point will be credited on checkout.';
+                    this.rfidCustomerName = data.data?.full_name || this.selectedCustomer?.full_name;
+                    this.rfidCurrentPoints = Number(data.data?.points || 0);
+                    this.rfidInput = data.data?.rfid || code;
+
+                    // If a customer was found by RFID and no customer was active, select them
+                    if (!this.selectedCustomer && data.data?.id) {
+                        this.selectCustomer(data.data);
+                    }
+                    setTimeout(() => window.initLucideIcons && window.initLucideIcons(), 50);
+                } else {
+                    this.rfidScanSuccess = false;
+                    this.rfidScanMessage = data.message || 'RFID card not found.';
+                }
+            })
+            .catch(err => {
+                this.isScanningRfid = false;
+                this.rfidScanSuccess = false;
+                this.rfidScanMessage = 'Network error verifying RFID card: ' + err.message;
+            });
+        },
+
+        clearRfidScan() {
+            this.rfidCardScanned = false;
+            this.rfidInput = '';
+            this.rfidScanMessage = '';
+            this.rfidScanSuccess = false;
+            setTimeout(() => window.initLucideIcons && window.initLucideIcons(), 50);
+        },
+
+        applyLoyaltyDiscountPercent(percent) {
+            const subtotal = this.getPackagePrice() + this.getAddonsTotal();
+            this.discountAmount = Math.round(subtotal * (percent / 100));
+        },
+
+        applyLoyaltyDiscountFixed(amount) {
+            this.discountAmount = Number(amount);
+        },
+
         // Step 5: Finalize & Generate Templates
         finalizeTransaction() {
             this.isSubmitting = true;
@@ -1607,6 +1995,8 @@ function workflowWizard(config) {
                 discount_amount: parseFloat(this.discountAmount) || 0,
                 payment_method: this.paymentMethod,
                 payment_status: 'completed',
+                rfid: this.rfidInput ? this.rfidInput.trim() : (this.selectedCustomer?.rfid || null),
+                rfid_scanned: this.rfidCardScanned || false,
                 photos: sortedPhotos.map(p => ({
                     original_filename: p.original_filename,
                     storage_path: p.storage_path,
@@ -1629,6 +2019,9 @@ function workflowWizard(config) {
                 this.isSubmitting = false;
                 if (data.success) {
                     this.finalResult = data.data;
+                    if (this.selectedCustomer && data.data?.total_points !== undefined) {
+                        this.selectedCustomer.points = data.data.total_points;
+                    }
                     this.showSuccessModal = true;
                     setTimeout(() => window.initLucideIcons && window.initLucideIcons(), 50);
                 } else {
@@ -1664,6 +2057,12 @@ function workflowWizard(config) {
             this.photos = [];
             this.selectedAddonsMap = {};
             this.discountAmount = 0;
+            this.rfidInput = '';
+            this.rfidCardScanned = false;
+            this.rfidCustomerName = '';
+            this.rfidCurrentPoints = 0;
+            this.rfidScanMessage = '';
+            this.rfidScanSuccess = false;
             this.showSuccessModal = false;
             this.finalResult = null;
         }

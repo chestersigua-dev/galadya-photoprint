@@ -122,6 +122,34 @@
             <strong>{{ $receipt['payment_status'] }}</strong>
         </div>
 
+        @if(!empty($receipt['rfid_scanned']))
+            <div class="divider"></div>
+            <div class="flex" style="font-size: 11px;">
+                <span>Loyalty Card:</span>
+                <strong>{{ $receipt['rfid_used'] ?? 'Active' }}</strong>
+            </div>
+            <div class="flex" style="font-size: 11px;">
+                <span>Points Earned:</span>
+                <strong style="color: #7700dc;">+{{ $receipt['points_earned'] ?? 1 }} pt</strong>
+            </div>
+            <div class="flex" style="font-size: 11px;">
+                <span>Total Points Balance:</span>
+                <strong>{{ $receipt['total_points'] ?? 0 }} pts</strong>
+            </div>
+        @endif
+
+        @if(!empty($receipt['blockchain_block']))
+            <div class="divider"></div>
+            <div class="flex" style="font-size: 10px;">
+                <span>Blockchain Block:</span>
+                <strong>{{ $receipt['blockchain_block'] }}</strong>
+            </div>
+            <div class="flex" style="font-size: 9px; color: #6b7280;">
+                <span>Ledger Hash:</span>
+                <strong style="font-family: monospace;">{{ $receipt['blockchain_hash'] }}</strong>
+            </div>
+        @endif
+
         <div class="divider"></div>
 
         <p class="text-center" style="font-size: 10px; margin-top: 8px; color: #4b5563; font-style: italic;">

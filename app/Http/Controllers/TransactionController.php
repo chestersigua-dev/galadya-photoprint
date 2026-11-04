@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Transaction;
+use App\Services\BlockchainAuditService;
 use App\Services\TransactionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -13,7 +14,8 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 class TransactionController extends Controller
 {
     public function __construct(
-        protected TransactionService $transactionService
+        protected TransactionService $transactionService,
+        protected BlockchainAuditService $blockchainAuditService
     ) {}
 
     /**
@@ -29,10 +31,12 @@ class TransactionController extends Controller
         $transactions = Transaction::with(['customer', 'package', 'addons.packageAddon', 'creator'])
             ->when($search, function ($q) use ($search) {
                 $q->where('transaction_code', 'LIKE', "%{$search}%")
+                  ->orWhere('rfid_code', 'LIKE', "%{$search}%")
                   ->orWhereHas('customer', function ($cq) use ($search) {
                       $cq->where('first_name', 'LIKE', "%{$search}%")
                          ->orWhere('last_name', 'LIKE', "%{$search}%")
-                         ->orWhere('contact_number', 'LIKE', "%{$search}%");
+                         ->orWhere('contact_number', 'LIKE', "%{$search}%")
+                         ->orWhere('rfid', 'LIKE', "%{$search}%");
                   });
             })
             ->when($status, fn($q) => $q->where('payment_status', $status))
@@ -50,7 +54,14 @@ class TransactionController extends Controller
      */
     public function show(Transaction $transaction): JsonResponse
     {
-        $transaction->load(['customer', 'package', 'addons.packageAddon', 'photos', 'creator']);
+        $transaction->load(['customer', 'package', 'addons.packageAddon', 'photos', 'creator', 'blockchainLogs']);
+
+        // Record immutable access log
+        $this->blockchainAuditService->recordAccessBlock(
+            $transaction,
+            'sale.accessed',
+            'Staff viewed transaction receipt and details'
+        );
 
         return response()->json([
             'success' => true,
@@ -65,6 +76,14 @@ class TransactionController extends Controller
     public function receipt(Transaction $transaction): View
     {
         $transaction->load(['customer', 'package', 'addons.packageAddon', 'creator']);
+
+        // Record immutable receipt printing event
+        $this->blockchainAuditService->recordAccessBlock(
+            $transaction,
+            'sale.receipt_printed',
+            'Printed or reprinted POS thermal receipt'
+        );
+
         $receipt = $this->transactionService->buildReceiptPayload($transaction);
 
         return view('transactions.receipt', compact('transaction', 'receipt'));

@@ -31,7 +31,7 @@ class WorkflowController extends Controller
      */
     public function index(): View
     {
-        $customers = Customer::orderBy('first_name')->take(20)->get();
+        $customers = Customer::orderBy('created_at', 'desc')->take(50)->get();
         $packages = Package::where('is_active', true)->get();
         $addons = PackageAddon::where('is_active', true)->get();
 
@@ -141,13 +141,30 @@ class WorkflowController extends Controller
         $query = trim($request->get('q', ''));
 
         $clients = Customer::when($query, function ($q) use ($query) {
-            $q->where('first_name', 'LIKE', "%{$query}%")
-              ->orWhere('last_name', 'LIKE', "%{$query}%")
-              ->orWhere('contact_number', 'LIKE', "%{$query}%")
-              ->orWhere('email', 'LIKE', "%{$query}%");
+            $q->where(function ($sub) use ($query) {
+                $sub->where('first_name', 'LIKE', "%{$query}%")
+                    ->orWhere('last_name', 'LIKE', "%{$query}%")
+                    ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ["%{$query}%"])
+                    ->orWhereRaw("(first_name || ' ' || last_name) LIKE ?", ["%{$query}%"])
+                    ->orWhere('contact_number', 'LIKE', "%{$query}%")
+                    ->orWhere('email', 'LIKE', "%{$query}%")
+                    ->orWhere('rfid', 'LIKE', "%{$query}%");
+
+                $words = array_filter(explode(' ', $query));
+                if (count($words) > 1) {
+                    $sub->orWhere(function ($multi) use ($words) {
+                        foreach ($words as $word) {
+                            $multi->where(function ($w) use ($word) {
+                                $w->where('first_name', 'LIKE', "%{$word}%")
+                                  ->orWhere('last_name', 'LIKE', "%{$word}%");
+                            });
+                        }
+                    });
+                }
+            });
         })
         ->latest()
-        ->take(15)
+        ->take(25)
         ->get();
 
         return response()->json([
@@ -175,6 +192,75 @@ class WorkflowController extends Controller
                 'message' => 'Failed to register customer: ' . $e->getMessage(),
             ], 422);
         }
+    }
+
+    /**
+     * Process an RFID scan during checkout or client lookup.
+     */
+    public function apiRfidScan(Request $request): JsonResponse
+    {
+        $rfid = trim((string) $request->input('rfid', ''));
+        $currentCustomerId = $request->input('customer_id');
+
+        if (empty($rfid)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Please scan or enter a valid RFID card UID.',
+            ], 422);
+        }
+
+        // Look up customer by RFID
+        $customer = Customer::where('rfid', $rfid)->first();
+
+        if ($customer) {
+            $isSameCustomer = $currentCustomerId && ((int) $customer->id === (int) $currentCustomerId);
+
+            return response()->json([
+                'success' => true,
+                'status' => 'found',
+                'message' => "Loyalty Card verified for {$customer->full_name}",
+                'data' => [
+                    'id' => $customer->id,
+                    'full_name' => $customer->full_name,
+                    'first_name' => $customer->first_name,
+                    'last_name' => $customer->last_name,
+                    'contact_number' => $customer->contact_number,
+                    'email' => $customer->email,
+                    'rfid' => $customer->rfid,
+                    'points' => (int) ($customer->points ?? 0),
+                    'matches_current_customer' => $isSameCustomer,
+                ],
+            ]);
+        }
+
+        // Card is not yet assigned to any customer
+        // If an active client is selected in the workflow, allow pairing this card to them
+        if ($currentCustomerId && ($activeCustomer = Customer::find($currentCustomerId))) {
+            return response()->json([
+                'success' => true,
+                'status' => 'unassigned_can_link',
+                'message' => "Unassigned RFID Card ({$rfid}). Will be paired to {$activeCustomer->full_name} upon checkout.",
+                'data' => [
+                    'id' => $activeCustomer->id,
+                    'full_name' => $activeCustomer->full_name,
+                    'first_name' => $activeCustomer->first_name,
+                    'last_name' => $activeCustomer->last_name,
+                    'contact_number' => $activeCustomer->contact_number,
+                    'email' => $activeCustomer->email,
+                    'rfid' => $rfid,
+                    'points' => (int) ($activeCustomer->points ?? 0),
+                    'matches_current_customer' => true,
+                    'is_new_registration' => true,
+                ],
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'status' => 'not_found',
+            'message' => "Unregistered RFID card ({$rfid}). Select a client or register a new client to link this card.",
+            'rfid' => $rfid,
+        ], 404);
     }
 
     /**

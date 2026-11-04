@@ -22,6 +22,8 @@ class StoreTransactionWorkflowRequest extends FormRequest
             'discount_amount' => ['nullable', 'numeric', 'min:0'],
             'payment_method' => ['required', 'string', 'in:cash,gcash,maya,bank_transfer,card'],
             'payment_status' => ['required', 'string', 'in:pending,completed'],
+            'rfid' => ['nullable', 'string', 'max:100'],
+            'rfid_scanned' => ['nullable', 'boolean'],
             'notes' => ['nullable', 'string', 'max:500'],
             'photos' => ['required', 'array', 'min:1'],
             'photos.*.original_filename' => ['required', 'string'],

@@ -22,10 +22,27 @@ class CustomerController extends Controller
 
         $customers = Customer::with(['transactions.package'])
             ->when($search, function ($q) use ($search) {
-                $q->where('first_name', 'LIKE', "%{$search}%")
-                  ->orWhere('last_name', 'LIKE', "%{$search}%")
-                  ->orWhere('contact_number', 'LIKE', "%{$search}%")
-                  ->orWhere('email', 'LIKE', "%{$search}%");
+                $q->where(function ($sub) use ($search) {
+                    $sub->where('first_name', 'LIKE', "%{$search}%")
+                        ->orWhere('last_name', 'LIKE', "%{$search}%")
+                        ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ["%{$search}%"])
+                        ->orWhereRaw("(first_name || ' ' || last_name) LIKE ?", ["%{$search}%"])
+                        ->orWhere('contact_number', 'LIKE', "%{$search}%")
+                        ->orWhere('email', 'LIKE', "%{$search}%")
+                        ->orWhere('rfid', 'LIKE', "%{$search}%");
+
+                    $words = array_filter(explode(' ', $search));
+                    if (count($words) > 1) {
+                        $sub->orWhere(function ($multi) use ($words) {
+                            foreach ($words as $word) {
+                                $multi->where(function ($w) use ($word) {
+                                    $w->where('first_name', 'LIKE', "%{$word}%")
+                                      ->orWhere('last_name', 'LIKE', "%{$word}%");
+                                });
+                            }
+                        });
+                    }
+                });
             })
             ->orderBy($sort, $direction)
             ->paginate(15)
@@ -61,6 +78,8 @@ class CustomerController extends Controller
                 'last_name' => $customer->last_name,
                 'email' => $customer->email,
                 'contact_number' => $customer->contact_number,
+                'rfid' => $customer->rfid,
+                'points' => (int) ($customer->points ?? 0),
                 'address' => $customer->address,
                 'notes' => $customer->notes,
                 'total_sessions_count' => $customer->total_sessions_count,
@@ -73,6 +92,8 @@ class CustomerController extends Controller
                     'grand_total' => $t->formatted_grand_total,
                     'payment_method' => strtoupper($t->payment_method),
                     'payment_status' => $t->payment_status,
+                    'rfid_scanned' => (bool) $t->rfid_scanned,
+                    'points_earned' => (int) $t->points_earned,
                 ]),
             ],
         ]);

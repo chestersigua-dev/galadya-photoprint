@@ -14,10 +14,16 @@ class Customer extends Model
     protected $fillable = [
         'first_name',
         'last_name',
+        'rfid',
+        'points',
         'email',
         'contact_number',
         'address',
         'notes',
+    ];
+
+    protected $casts = [
+        'points' => 'integer',
     ];
 
     protected $appends = [
@@ -25,6 +31,16 @@ class Customer extends Model
         'total_sessions_count',
         'lifetime_spend',
     ];
+
+    /**
+     * Award loyalty points to customer.
+     */
+    public function awardPoints(int $amount = 1): int
+    {
+        $this->increment('points', $amount);
+        $this->refresh();
+        return $this->points;
+    }
 
     /**
      * All transactions/sessions made by this customer.

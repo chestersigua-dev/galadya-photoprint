@@ -22,6 +22,9 @@ class Transaction extends Model
         'grand_total',
         'payment_method',
         'payment_status',
+        'rfid_code',
+        'rfid_scanned',
+        'points_earned',
         'created_by',
         'notes',
     ];
@@ -31,6 +34,8 @@ class Transaction extends Model
         'addons_total' => 'decimal:2',
         'discount_amount' => 'decimal:2',
         'grand_total' => 'decimal:2',
+        'rfid_scanned' => 'boolean',
+        'points_earned' => 'integer',
     ];
 
     protected $appends = [
@@ -76,6 +81,22 @@ class Transaction extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
+     * Blockchain audit logs for this transaction.
+     */
+    public function blockchainLogs(): HasMany
+    {
+        return $this->hasMany(SalesBlockchainLog::class, 'transaction_id');
+    }
+
+    /**
+     * Get the initial sale block from the immutable ledger.
+     */
+    public function salesBlock(): ?SalesBlockchainLog
+    {
+        return $this->blockchainLogs()->where('event_type', 'sale.committed')->first();
     }
 
     public function getFormattedGrandTotalAttribute(): string
