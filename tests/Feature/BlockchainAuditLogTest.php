@@ -84,7 +84,7 @@ class BlockchainAuditLogTest extends TestCase
 
         $beforeCount = SalesBlockchainLog::count();
 
-        // 1. Staff accesses sale details
+        // Access transaction details
         $this->actingAs($admin)
             ->getJson(route('transactions.show', $transaction->id))
             ->assertStatus(200)
@@ -95,7 +95,7 @@ class BlockchainAuditLogTest extends TestCase
         $this->assertEquals('sale.accessed', $accessBlock->event_type);
         $this->assertTrue($accessBlock->verifySelfIntegrity());
 
-        // 2. Staff views/prints thermal receipt
+        // Print thermal receipt
         $this->actingAs($admin)
             ->get(route('transactions.receipt', $transaction->id))
             ->assertStatus(200);
@@ -152,7 +152,7 @@ class BlockchainAuditLogTest extends TestCase
 
         // Tamper with previous_hash pointer of block #3
         $block = SalesBlockchainLog::where('block_index', 3)->first();
-        if (!$block) {
+        if (! $block) {
             $this->markTestSkipped('Block #3 not found in seed data.');
         }
 
@@ -221,11 +221,11 @@ class BlockchainAuditLogTest extends TestCase
 
     public function test_artisan_command_verify_ledger_succeeds_and_fails_on_tamper(): void
     {
-        // 1. Clean verification should exit 0
+        // Standard ledger audit check
         $this->artisan('audit:verify-ledger')
             ->assertExitCode(0);
 
-        // 2. Tamper a block in DB
+        // Simulate database tampering
         $block = SalesBlockchainLog::orderBy('block_index', 'desc')->first();
         DB::table('sales_blockchain_logs')
             ->where('id', $block->id)
@@ -233,9 +233,8 @@ class BlockchainAuditLogTest extends TestCase
                 'hash' => str_repeat('f', 64),
             ]);
 
-        // 3. Command should detect tampering and exit 1
+        // Audit command detects discrepancy
         $this->artisan('audit:verify-ledger')
             ->assertExitCode(1);
     }
 }
-

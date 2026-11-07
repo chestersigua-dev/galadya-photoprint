@@ -10,10 +10,8 @@ use App\Models\Transaction;
 use App\Models\TransactionAddon;
 use App\Models\TransactionPhoto;
 use Carbon\Carbon;
-use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 
 class TransactionService
 {
@@ -42,7 +40,7 @@ class TransactionService
             $newSeq = '0001';
         }
 
-        return $prefix . $newSeq;
+        return $prefix.$newSeq;
     }
 
     /**
@@ -62,7 +60,7 @@ class TransactionService
             $addonsTotal = 0.00;
             $addonItemsToSave = [];
 
-            if (!empty($addonsData)) {
+            if (! empty($addonsData)) {
                 $addonIds = collect($addonsData)->pluck('id');
                 $addonModels = PackageAddon::whereIn('id', $addonIds)->get()->keyBy('id');
 
@@ -89,15 +87,15 @@ class TransactionService
             $code = $this->generateTransactionCode();
 
             // Handle RFID loyalty scan & point accumulation (1 point per scan)
-            $scannedRfid = !empty($data['rfid']) ? trim((string) $data['rfid']) : null;
-            $rfidScanned = !empty($data['rfid_scanned']) || !empty($scannedRfid);
+            $scannedRfid = ! empty($data['rfid']) ? trim((string) $data['rfid']) : null;
+            $rfidScanned = ! empty($data['rfid_scanned']) || ! empty($scannedRfid);
             $pointsEarned = 0;
 
             if ($rfidScanned) {
                 // If customer does not have an RFID registered yet, assign it
-                if (empty($customer->rfid) && !empty($scannedRfid)) {
+                if (empty($customer->rfid) && ! empty($scannedRfid)) {
                     $existing = Customer::where('rfid', $scannedRfid)->where('id', '!=', $customer->id)->first();
-                    if (!$existing) {
+                    if (! $existing) {
                         $customer->rfid = $scannedRfid;
                     }
                 }
@@ -108,7 +106,7 @@ class TransactionService
                 $pointsEarned = 1;
             }
 
-            // 1. Create Transaction
+            // Create transaction record
             $transaction = Transaction::create([
                 'transaction_code' => $code,
                 'customer_id' => $customer->id,
@@ -126,7 +124,7 @@ class TransactionService
                 'notes' => $data['notes'] ?? null,
             ]);
 
-            // 2. Save Addon rows
+            // Save addon line items
             foreach ($addonItemsToSave as $row) {
                 TransactionAddon::create([
                     'transaction_id' => $transaction->id,
@@ -137,15 +135,15 @@ class TransactionService
                 ]);
             }
 
-            // 3. Process Photos & Generate 4R Prints
+            // Save photo records and generate print files
             $photos = $data['photos'] ?? [];
             $starredPhotoPaths = [];
             $favoritePhotoPath = null;
             $savedPhotoModels = [];
 
             foreach ($photos as $p) {
-                $isStarred = !empty($p['is_starred']);
-                $isFavorite = !empty($p['is_favorite']);
+                $isStarred = ! empty($p['is_starred']);
+                $isFavorite = ! empty($p['is_favorite']);
 
                 $previewRelPath = $p['preview_path'] ?? null;
                 $originalRelPath = $p['storage_path'] ?? $previewRelPath;
@@ -172,12 +170,12 @@ class TransactionService
                 }
             }
 
-            // If no photo was marked favorite, default to first starred or first uploaded
-            if (!$favoritePhotoPath && !empty($starredPhotoPaths)) {
+            // Default to first starred photo if none marked as favorite
+            if (! $favoritePhotoPath && ! empty($starredPhotoPaths)) {
                 $favoritePhotoPath = $starredPhotoPaths[0];
             }
 
-            // 4. Generate Output A: 4R Dual Photostrip
+            // Dual photostrip composite
             $timestamp = time();
             $stripFilename = "prints/{$code}_dual_strip_{$timestamp}.jpg";
             $stripAbsPath = Storage::disk('public')->path($stripFilename);
@@ -192,7 +190,7 @@ class TransactionService
                 ]
             );
 
-            // 5. Generate Output B: 4R Solo Favorite Print
+            // Solo favorite portrait print
             $soloFilename = null;
             if ($favoritePhotoPath) {
                 $soloFilename = "prints/{$code}_solo_favorite_{$timestamp}.jpg";
@@ -215,7 +213,7 @@ class TransactionService
                 }
             }
 
-            // 6. Mine & Anchor Sale to Cryptographic Blockchain Audit Ledger
+            // Record transaction in cryptographic audit ledger
             $blockchainBlock = $this->blockchainAuditService->recordSaleBlock(
                 $transaction,
                 'sale.committed',
@@ -265,10 +263,10 @@ class TransactionService
             'contact_number' => $transaction->customer->contact_number,
             'package_title' => $transaction->package->title,
             'package_price' => $transaction->formatted_package_price,
-            'addons' => $transaction->addons->map(fn($item) => [
+            'addons' => $transaction->addons->map(fn ($item) => [
                 'title' => $item->packageAddon->title,
                 'qty' => $item->qty,
-                'unit_price' => '₱' . number_format($item->unit_price, 2),
+                'unit_price' => '₱'.number_format($item->unit_price, 2),
                 'subtotal' => $item->formatted_subtotal,
             ])->toArray(),
             'addons_total' => $transaction->formatted_addons_total,
@@ -280,11 +278,10 @@ class TransactionService
             'rfid_scanned' => (bool) $transaction->rfid_scanned,
             'points_earned' => (int) $transaction->points_earned,
             'total_points' => (int) ($transaction->customer->points ?? 0),
-            'blockchain_block' => $transaction->salesBlock() ? '#' . str_pad((string) $transaction->salesBlock()->block_index, 5, '0', STR_PAD_LEFT) : null,
+            'blockchain_block' => $transaction->salesBlock() ? '#'.str_pad((string) $transaction->salesBlock()->block_index, 5, '0', STR_PAD_LEFT) : null,
             'blockchain_hash' => $transaction->salesBlock()?->short_hash,
             'operator' => $transaction->creator?->name ?? 'Staff',
             'footer_text' => Setting::get('receipt_footer_text', 'Thank you for choosing Galadya Studio!'),
         ];
     }
 }
-

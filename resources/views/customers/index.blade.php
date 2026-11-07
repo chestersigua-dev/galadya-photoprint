@@ -175,9 +175,7 @@
         @endif
     </div>
 
-    <!-- ========================================================================= -->
-    <!-- SLIDE-OVER MODAL DRAWER: CLIENT HISTORY & SPEND (Requirement 3.C) -->
-    <!-- ========================================================================= -->
+    <!-- Client Details Drawer -->
     <div 
         x-show="drawerOpen" 
         x-transition.opacity 

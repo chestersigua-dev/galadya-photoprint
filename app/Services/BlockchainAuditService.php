@@ -91,7 +91,7 @@ class BlockchainAuditService
             // Ensure relations are loaded for comprehensive snapshot
             $transaction->loadMissing(['customer', 'package', 'addons.packageAddon', 'photos']);
 
-            $addonsSnapshot = $transaction->addons->map(fn($addon) => [
+            $addonsSnapshot = $transaction->addons->map(fn ($addon) => [
                 'addon_id' => $addon->package_addon_id,
                 'title' => $addon->packageAddon?->title ?? 'Custom Add-on',
                 'qty' => (int) $addon->qty,
@@ -260,7 +260,7 @@ class BlockchainAuditService
         foreach ($blocks as $idx => $block) {
             $expectedIndex = $idx + 1;
 
-            // 1. Verify continuous sequential block indexing
+            // Verify sequence index continuity
             if ((int) $block->block_index !== $expectedIndex) {
                 return [
                     'is_valid' => false,
@@ -275,7 +275,7 @@ class BlockchainAuditService
                 ];
             }
 
-            // 2. Verify previous_hash link
+            // Verify hash link to predecessor
             if ($block->previous_hash !== $expectedPreviousHash) {
                 return [
                     'is_valid' => false,
@@ -291,7 +291,7 @@ class BlockchainAuditService
                 ];
             }
 
-            // 3. Recompute mathematical SHA-256 digest
+            // Recompute SHA-256 digest from canonical payload
             $canonicalPayload = self::canonicalJson(
                 is_array($block->payload) ? $block->payload : json_decode((string) $block->payload, true)
             );
@@ -305,7 +305,7 @@ class BlockchainAuditService
                 (int) $block->nonce
             );
 
-            if (!hash_equals($block->hash, $recomputedHash)) {
+            if (! hash_equals($block->hash, $recomputedHash)) {
                 return [
                     'is_valid' => false,
                     'status' => 'tampered',
@@ -445,4 +445,3 @@ class BlockchainAuditService
         }
     }
 }
-

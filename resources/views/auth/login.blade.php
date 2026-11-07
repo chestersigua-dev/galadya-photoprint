@@ -21,7 +21,7 @@
             $refs.passwordInput.value = pass;
         }
     }">
-        <!-- Authentic Studio Logo Branding -->
+        <!-- Studio Branding -->
         <div class="text-center mb-6">
             <div class="inline-flex items-center justify-center p-3 rounded-3xl bg-white shadow-2xl shadow-purple-950 mb-3 border-2 border-purple-300/40 transform hover:scale-105 transition">
                 <img src="{{ asset('images/logo 1.png') }}" alt="Galadya Studio" class="h-16 w-auto object-contain">

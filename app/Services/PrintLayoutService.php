@@ -4,27 +4,24 @@ namespace App\Services;
 
 use App\Models\Setting;
 use Exception;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
-use Intervention\Image\Drivers\Gd\Driver;
-use Intervention\Image\ImageManager;
 
 /**
  * PrintLayoutService
- * 
+ *
  * Compiles high-resolution 4R prints (1200 x 1800 px @ 300 DPI):
- * 1. Output A: Dual-strip photostrip composite (10 selected photos, 2 columns of 5 photos,
- *    Galadya Studio logo centered at the bottom footer of each strip, 10px outer margin).
- * 2. Output B: Solo Favorite 4R Print (single favorite photo scaled & centered,
- *    Galadya Studio logo at bottom-left corner sized at exactly 3% of total canvas area,
- *    10px outer margin).
+ * - Dual-strip photostrip composite (two columns of 5 photos with footer branding).
+ * - Solo 4R portrait (single favorite photo scaled & centered with watermark).
  */
 class PrintLayoutService
 {
     protected int $canvasWidth = 1200;
+
     protected int $canvasHeight = 1800;
+
     protected int $margin = 10;
+
     protected int $dpi = 300;
+
     protected string $logoPath;
 
     public function __construct()
@@ -39,11 +36,11 @@ class PrintLayoutService
     }
 
     /**
-     * Generate Output A: Dual-Strip Photostrip Composite (10 Photos).
+     * Generate dual-strip photostrip composite (10 photos across 2 strips).
      *
-     * @param array  $photoPaths Array of absolute paths to selected photos (up to 10)
-     * @param string $outputPath Absolute destination path for compiled JPEG
-     * @param array  $customMeta Optional metadata (e.g. client name, date, transaction code)
+     * @param  array  $photoPaths  Array of absolute paths to selected photos (up to 10)
+     * @param  string  $outputPath  Absolute destination path for compiled JPEG
+     * @param  array  $customMeta  Optional metadata (e.g. client name, date, transaction code)
      * @return array Result metadata
      */
     public function generateDualPhotostrip(array $photoPaths, string $outputPath, array $customMeta = []): array
@@ -54,7 +51,7 @@ class PrintLayoutService
 
         // Ensure target folder exists
         $dir = dirname($outputPath);
-        if (!is_dir($dir)) {
+        if (! is_dir($dir)) {
             mkdir($dir, 0755, true);
         }
 
@@ -158,7 +155,7 @@ class PrintLayoutService
         array $photos,
         array $meta
     ): void {
-        $slotX = $colLeft + (int)(($stripWidth - $slotWidth) / 2);
+        $slotX = $colLeft + (int) (($stripWidth - $slotWidth) / 2);
         $currentY = $startY;
 
         $borderColor = imagecolorallocate($canvas, 241, 245, 249);
@@ -214,7 +211,7 @@ class PrintLayoutService
             } else {
                 // Placeholder block
                 imagefilledrectangle($canvas, $slotX, $currentY, $slotX + $slotWidth, $currentY + $slotHeight, $borderColor);
-                imagestring($canvas, 4, $slotX + 180, $currentY + 140, "Galadya Studio Shot #" . ($index + 1), $gray);
+                imagestring($canvas, 4, $slotX + 180, $currentY + 140, 'Galadya Studio Shot #'.($index + 1), $gray);
             }
 
             $currentY += $slotHeight + $photoGap;
@@ -248,8 +245,8 @@ class PrintLayoutService
                 $targetLogoW = max(1, (int) round($logoOrigW * $scale));
                 $targetLogoH = max(1, (int) round($logoOrigH * $scale));
 
-                $logoX = $x + (int)(($width - $targetLogoW) / 2);
-                $logoY = $y + (int)(($height - $targetLogoH - 30) / 2);
+                $logoX = $x + (int) (($width - $targetLogoW) / 2);
+                $logoY = $y + (int) (($height - $targetLogoH - 30) / 2);
 
                 imagecopyresampled(
                     $canvas,
@@ -266,11 +263,11 @@ class PrintLayoutService
                 imagedestroy($logo);
 
                 // Timestamp / Session Code
-                $dateText = !empty($meta['date']) ? $meta['date'] : date('F d, Y');
-                $codeText = !empty($meta['code']) ? $meta['code'] : 'GALADYA-STUDIO';
+                $dateText = ! empty($meta['date']) ? $meta['date'] : date('F d, Y');
+                $codeText = ! empty($meta['code']) ? $meta['code'] : 'GALADYA-STUDIO';
                 $footerLine = "{$codeText}  *  {$dateText}";
 
-                $textX = $x + (int)(($width - (strlen($footerLine) * 7)) / 2);
+                $textX = $x + (int) (($width - (strlen($footerLine) * 7)) / 2);
                 imagestring($canvas, 2, $textX, $logoY + $targetLogoH + 8, $footerLine, $gray);
 
                 return;
@@ -278,38 +275,31 @@ class PrintLayoutService
         }
 
         // Text fallback if logo file is unavailable
-        $title = "G A L A D Y A   S T U D I O";
-        $subtitle = "P H O T O P R I N T";
-        $tX = $x + (int)(($width - (strlen($title) * 9)) / 2);
-        $sX = $x + (int)(($width - (strlen($subtitle) * 8)) / 2);
+        $title = 'G A L A D Y A   S T U D I O';
+        $subtitle = 'P H O T O P R I N T';
+        $tX = $x + (int) (($width - (strlen($title) * 9)) / 2);
+        $sX = $x + (int) (($width - (strlen($subtitle) * 8)) / 2);
 
         imagestring($canvas, 5, $tX, $y + 20, $title, $darkSlate);
         imagestring($canvas, 4, $sX, $y + 50, $subtitle, $gold);
     }
 
     /**
-     * Generate Output B: Solo Favorite 4R Print.
+     * Generate standalone 4R portrait print.
      *
-     * Specs:
-     * - 4R canvas: 1200 x 1800 px (or 1800 x 1200 px if horizontal).
-     * - 10px safe margin all sides.
-     * - Single favorite photo scaled and centered.
-     * - Logo placed at bottom-left corner, sized at exactly 3% of total canvas area.
-     *
-     * @param string $photoPath  Path to the favorite photo
-     * @param string $outputPath Path for generated JPEG
-     * @param array  $customMeta Optional metadata
-     * @return array
+     * @param  string  $photoPath  Path to the favorite photo
+     * @param  string  $outputPath  Path for generated JPEG
+     * @param  array  $customMeta  Optional metadata
      */
     public function generateSoloFavorite4R(string $photoPath, string $outputPath, array $customMeta = []): array
     {
         $dir = dirname($outputPath);
-        if (!is_dir($dir)) {
+        if (! is_dir($dir)) {
             mkdir($dir, 0755, true);
         }
 
         $photoImg = $this->loadImageResource($photoPath);
-        if (!$photoImg) {
+        if (! $photoImg) {
             throw new Exception("Unable to load favorite photo resource from {$photoPath}");
         }
 
@@ -455,22 +445,21 @@ class PrintLayoutService
      */
     protected function loadImageResource(?string $path)
     {
-        if (!$path || !file_exists($path)) {
+        if (! $path || ! file_exists($path)) {
             return null;
         }
 
         $info = @getimagesize($path);
-        if (!$info) {
+        if (! $info) {
             return null;
         }
 
         return match ($info[2]) {
             IMAGETYPE_JPEG => @imagecreatefromjpeg($path),
-            IMAGETYPE_PNG  => @imagecreatefrompng($path),
+            IMAGETYPE_PNG => @imagecreatefrompng($path),
             IMAGETYPE_WEBP => @imagecreatefromwebp($path),
-            IMAGETYPE_BMP  => @imagecreatefrombmp($path),
-            default        => null,
+            IMAGETYPE_BMP => @imagecreatefrombmp($path),
+            default => null,
         };
     }
 }
-

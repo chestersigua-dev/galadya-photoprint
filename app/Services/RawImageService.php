@@ -5,15 +5,14 @@ namespace App\Services;
 use Exception;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Process;
-use Illuminate\Support\Facades\Storage;
 
 /**
  * RawImageService
- * 
+ *
  * Handles zero-lag ingestion and embedded JPEG extraction for camera RAW formats
  * (Canon .CR2, .CR3, Nikon .NEF, Sony .ARW, Fujifilm .RAF, Olympus .ORF, Panasonic .RW2, Adobe .DNG)
  * and standard raster formats (.JPG, .JPEG, .PNG, .WEBP).
- * 
+ *
  * Strategy Hierarchy:
  * 1. Standard images -> native GD / Intervention direct thumbnailing.
  * 2. Camera RAW -> Exiftool embedded high-res preview extraction (-PreviewImage / -JpgFromRaw / -OtherImage).
@@ -27,14 +26,14 @@ class RawImageService
      * Supported RAW camera file extensions.
      */
     protected array $rawExtensions = [
-        'cr2', 'cr3', 'nef', 'arw', 'dng', 'raf', 'orf', 'rw2', 'pef', 'srw'
+        'cr2', 'cr3', 'nef', 'arw', 'dng', 'raf', 'orf', 'rw2', 'pef', 'srw',
     ];
 
     /**
      * Supported standard raster formats.
      */
     protected array $standardExtensions = [
-        'jpg', 'jpeg', 'png', 'webp', 'bmp'
+        'jpg', 'jpeg', 'png', 'webp', 'bmp',
     ];
 
     /**
@@ -90,30 +89,30 @@ class RawImageService
     /**
      * Extract preview from uploaded file and save to destination.
      *
-     * @param string $sourceFullPath Absolute path to source image (RAW or standard)
-     * @param string $destFullPath   Absolute path where preview JPEG should be written
-     * @param int    $maxDimension    Max width/height for web preview (e.g. 1600px)
+     * @param  string  $sourceFullPath  Absolute path to source image (RAW or standard)
+     * @param  string  $destFullPath  Absolute path where preview JPEG should be written
+     * @param  int  $maxDimension  Max width/height for web preview (e.g. 1600px)
      * @return array Metadata about extracted preview
      */
     public function processImage(string $sourceFullPath, string $destFullPath, int $maxDimension = 1600): array
     {
         $extension = strtolower(pathinfo($sourceFullPath, PATHINFO_EXTENSION));
         $destDir = dirname($destFullPath);
-        if (!is_dir($destDir)) {
+        if (! is_dir($destDir)) {
             mkdir($destDir, 0755, true);
         }
 
-        // 1. Standard Images (JPG, PNG, WEBP)
+        // Standard raster images
         if ($this->isStandardImage($extension)) {
             return $this->processStandardImage($sourceFullPath, $destFullPath, $maxDimension);
         }
 
-        // 2. Camera RAW Files
+        // Camera RAW formats
         if ($this->isRaw($extension)) {
             return $this->processRawImage($sourceFullPath, $destFullPath, $maxDimension);
         }
 
-        // 3. Fallback for unexpected formats
+        // Generic fallback for unsupported extensions
         return $this->generatePlaceholderPreview(
             $sourceFullPath,
             $destFullPath,
@@ -128,7 +127,7 @@ class RawImageService
     {
         try {
             $info = @getimagesize($sourcePath);
-            if (!$info) {
+            if (! $info) {
                 throw new Exception("Unable to read image dimensions from {$sourcePath}");
             }
 
@@ -136,15 +135,16 @@ class RawImageService
 
             $srcImage = match ($imageType) {
                 IMAGETYPE_JPEG => @imagecreatefromjpeg($sourcePath),
-                IMAGETYPE_PNG  => @imagecreatefrompng($sourcePath),
+                IMAGETYPE_PNG => @imagecreatefrompng($sourcePath),
                 IMAGETYPE_WEBP => @imagecreatefromwebp($sourcePath),
-                IMAGETYPE_BMP  => @imagecreatefrombmp($sourcePath),
-                default        => null,
+                IMAGETYPE_BMP => @imagecreatefrombmp($sourcePath),
+                default => null,
             };
 
-            if (!$srcImage) {
+            if (! $srcImage) {
                 // If native GD fails, simply copy
                 copy($sourcePath, $destPath);
+
                 return [
                     'success' => true,
                     'method' => 'file_copy',
@@ -157,7 +157,7 @@ class RawImageService
             // Correct EXIF orientation for JPEG
             if ($imageType === IMAGETYPE_JPEG && function_exists('exif_read_data')) {
                 $exif = @exif_read_data($sourcePath);
-                if (!empty($exif['Orientation'])) {
+                if (! empty($exif['Orientation'])) {
                     $srcImage = $this->fixOrientation($srcImage, $exif['Orientation']);
                     $srcWidth = imagesx($srcImage);
                     $srcHeight = imagesy($srcImage);
@@ -198,6 +198,7 @@ class RawImageService
         } catch (Exception $e) {
             Log::warning("Standard image processing failed: {$e->getMessage()}. Copying directly.");
             copy($sourcePath, $destPath);
+
             return [
                 'success' => true,
                 'method' => 'file_copy_fallback',
@@ -237,7 +238,7 @@ class RawImageService
         return $this->generatePlaceholderPreview(
             $sourcePath,
             $destPath,
-            "RAW File: " . basename($sourcePath)
+            'RAW File: '.basename($sourcePath)
         );
     }
 
@@ -305,9 +306,9 @@ class RawImageService
     protected function extractViaImagick(string $sourcePath, string $destPath, int $maxDimension): array
     {
         try {
-            $imagick = new \Imagick();
+            $imagick = new \Imagick;
             // Read first embedded frame
-            $imagick->readImage($sourcePath . '[0]');
+            $imagick->readImage($sourcePath.'[0]');
             $imagick->setImageFormat('jpeg');
             $imagick->setImageCompressionQuality(90);
 
@@ -333,6 +334,7 @@ class RawImageService
             ];
         } catch (Exception $e) {
             Log::debug("Imagick RAW conversion failed: {$e->getMessage()}");
+
             return ['success' => false];
         }
     }
@@ -351,6 +353,7 @@ class RawImageService
             if (file_exists($thumbPattern)) {
                 rename($thumbPattern, $destPath);
                 $dims = @getimagesize($destPath);
+
                 return [
                     'success' => true,
                     'method' => 'dcraw',
@@ -387,10 +390,10 @@ class RawImageService
         imagerectangle($img, 42, 42, $w - 42, $h - 42, $gold);
 
         // Header
-        imagestring($img, 5, (int)(($w - 280) / 2), 650, "G A L A D Y A   S T U D I O", $gold);
-        imagestring($img, 5, (int)(($w - strlen($label) * 9) / 2), 750, $label, $white);
-        imagestring($img, 4, (int)(($w - 320) / 2), 850, "Camera RAW Capture Ingested", $gray);
-        imagestring($img, 3, (int)(($w - 360) / 2), 920, "High-Res print pipeline ready", $gray);
+        imagestring($img, 5, (int) (($w - 280) / 2), 650, 'G A L A D Y A   S T U D I O', $gold);
+        imagestring($img, 5, (int) (($w - strlen($label) * 9) / 2), 750, $label, $white);
+        imagestring($img, 4, (int) (($w - 320) / 2), 850, 'Camera RAW Capture Ingested', $gray);
+        imagestring($img, 3, (int) (($w - 360) / 2), 920, 'High-Res print pipeline ready', $gray);
 
         imagejpeg($img, $destPath, 88);
         imagedestroy($img);
@@ -417,4 +420,3 @@ class RawImageService
         };
     }
 }
-

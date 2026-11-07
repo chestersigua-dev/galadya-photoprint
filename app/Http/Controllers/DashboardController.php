@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Customer;
 use App\Models\Package;
 use App\Models\Transaction;
 use Carbon\Carbon;
@@ -22,22 +21,21 @@ class DashboardController extends Controller
         $todayEnd = $nowPST->copy()->endOfDay();
         $monthStart = $nowPST->copy()->startOfMonth();
 
-        // 1. Today's Gross Revenue
+        // Daily revenue and completed sessions
         $todayGrossRevenue = (float) Transaction::where('payment_status', 'completed')
             ->whereBetween('created_at', [$todayStart, $todayEnd])
             ->sum('grand_total');
 
-        // 2. Sessions Completed Today
         $sessionsCompletedToday = Transaction::where('payment_status', 'completed')
             ->whereBetween('created_at', [$todayStart, $todayEnd])
             ->count();
 
-        // 3. Active Clients Month-to-Date (distinct customers with transactions this month)
+        // Month-to-date active unique clients
         $activeClientsMTD = Transaction::whereBetween('created_at', [$monthStart, $todayEnd])
             ->distinct('customer_id')
             ->count('customer_id');
 
-        // 4. Most Popular Package
+        // Most popular package calculation
         $popularPackageId = Transaction::select('package_id', DB::raw('count(*) as total'))
             ->groupBy('package_id')
             ->orderByDesc('total')
@@ -46,7 +44,7 @@ class DashboardController extends Controller
         $popularPackage = $popularPackageId ? Package::find($popularPackageId) : Package::first();
         $popularPackageCount = $popularPackageId ? Transaction::where('package_id', $popularPackageId)->count() : 0;
 
-        // 5. Recent 10 Transactions
+        // Recent transaction history
         $recentTransactions = Transaction::with(['customer', 'package', 'creator'])
             ->latest()
             ->take(10)
@@ -79,4 +77,3 @@ class DashboardController extends Controller
         ));
     }
 }
-

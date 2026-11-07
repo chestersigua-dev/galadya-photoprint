@@ -26,7 +26,7 @@
                 :class="sidebarOpen ? 'w-64' : 'w-20'" 
                 class="hidden md:flex flex-col bg-[#1c053a] text-purple-100 transition-all duration-300 ease-in-out border-r border-purple-900/60 z-30 select-none shadow-2xl shrink-0"
             >
-                <!-- Brand Header with Authentic Studio Logo -->
+                <!-- Brand Header -->
                 <div class="h-16 flex items-center justify-between px-4 border-b border-purple-900/80 bg-[#130229]">
                     <a href="{{ route('dashboard') }}" class="flex items-center gap-3 overflow-hidden">
                         <div class="h-10 w-10 rounded-xl bg-white p-1 flex items-center justify-center shadow-md shadow-purple-950 shrink-0 border border-purple-300/40">
@@ -49,7 +49,7 @@
 
                 <!-- Navigation Links -->
                 <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-                    <!-- 1. Dashboard -->
+                    <!-- Dashboard -->
                     <a 
                         href="{{ route('dashboard') }}" 
                         class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition {{ request()->routeIs('dashboard') ? 'bg-gradient-to-r from-purple-600 via-purple-500 to-pink-500 text-white font-bold shadow-md shadow-purple-950/40' : 'text-purple-200/90 hover:bg-purple-900/60 hover:text-white' }}"
@@ -58,7 +58,7 @@
                         <span x-show="sidebarOpen" x-transition.opacity>Dashboard</span>
                     </a>
 
-                    <!-- 2. Import & Print Workflow -->
+                    <!-- Ingestion & Print -->
                     <a 
                         href="{{ route('workflow.start') }}" 
                         class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition {{ request()->routeIs('workflow.*') ? 'bg-gradient-to-r from-purple-600 via-purple-500 to-pink-500 text-white font-bold shadow-md shadow-purple-950/40' : 'text-purple-200/90 hover:bg-purple-900/60 hover:text-white' }}"
@@ -68,7 +68,7 @@
                         <span x-show="sidebarOpen" class="text-[10px] px-1.5 py-0.5 rounded bg-yellow-400 text-purple-950 font-black uppercase tracking-wider">Fast</span>
                     </a>
 
-                    <!-- 3. Client Database -->
+                    <!-- Clients -->
                     <a 
                         href="{{ route('clients.index') }}" 
                         class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition {{ request()->routeIs('clients.*') ? 'bg-gradient-to-r from-purple-600 via-purple-500 to-pink-500 text-white font-bold shadow-md shadow-purple-950/40' : 'text-purple-200/90 hover:bg-purple-900/60 hover:text-white' }}"
@@ -77,7 +77,7 @@
                         <span x-show="sidebarOpen" x-transition.opacity>Client Database</span>
                     </a>
 
-                    <!-- 4. Packages & Add-ons -->
+                    <!-- Packages -->
                     <a 
                         href="{{ route('packages.index') }}" 
                         class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition {{ request()->routeIs('packages.*') ? 'bg-gradient-to-r from-purple-600 via-purple-500 to-pink-500 text-white font-bold shadow-md shadow-purple-950/40' : 'text-purple-200/90 hover:bg-purple-900/60 hover:text-white' }}"
@@ -86,7 +86,7 @@
                         <span x-show="sidebarOpen" x-transition.opacity>Packages & Add-ons</span>
                     </a>
 
-                    <!-- 5. Transaction History -->
+                    <!-- Transactions -->
                     <a 
                         href="{{ route('transactions.index') }}" 
                         class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition {{ request()->routeIs('transactions.*') ? 'bg-gradient-to-r from-purple-600 via-purple-500 to-pink-500 text-white font-bold shadow-md shadow-purple-950/40' : 'text-purple-200/90 hover:bg-purple-900/60 hover:text-white' }}"
@@ -95,7 +95,7 @@
                         <span x-show="sidebarOpen" x-transition.opacity>Transactions</span>
                     </a>
 
-                    <!-- 6. Blockchain Audit & Access Log -->
+                    <!-- Blockchain Audit -->
                     <a 
                         href="{{ route('admin.audit.index') }}" 
                         class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition {{ request()->routeIs('admin.audit.*') ? 'bg-gradient-to-r from-purple-600 via-purple-500 to-pink-500 text-white font-bold shadow-md shadow-purple-950/40' : 'text-purple-200/90 hover:bg-purple-900/60 hover:text-white' }}"
@@ -105,7 +105,7 @@
                         <span x-show="sidebarOpen" class="text-[9px] px-1 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono font-bold">SHA-256</span>
                     </a>
 
-                    <!-- 7. User & Role Management -->
+                    <!-- Users -->
                     @if(auth()->check() && (auth()->user()->hasRole('super_admin') || auth()->user()->canAccessModule('users_roles')))
                     <a 
                         href="{{ route('admin.users.index') }}" 
@@ -116,7 +116,7 @@
                     </a>
                     @endif
 
-                    <!-- 7. Settings -->
+                    <!-- Settings -->
                     <a 
                         href="{{ route('settings.index') }}" 
                         class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition {{ request()->routeIs('settings.*') ? 'bg-gradient-to-r from-purple-600 via-purple-500 to-pink-500 text-white font-bold shadow-md shadow-purple-950/40' : 'text-purple-200/90 hover:bg-purple-900/60 hover:text-white' }}"

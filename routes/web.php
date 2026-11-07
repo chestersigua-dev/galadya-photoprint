@@ -29,15 +29,14 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-    // Default entry redirect
-    Route::get('/', fn() => redirect()->route('dashboard'));
+    Route::get('/', fn () => redirect()->route('dashboard'));
 
-    // 1. Dashboard Module
+    // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])
         ->middleware('module:dashboard')
         ->name('dashboard');
 
-    // 2. Import & Print Workflow (Step-by-Step Wizard)
+    // Workflow
     Route::prefix('workflow')->name('workflow.')->middleware('module:import_print')->group(function () {
         Route::get('/start', [WorkflowController::class, 'index'])->name('start');
         Route::post('/upload', [WorkflowController::class, 'upload'])->name('upload');
@@ -49,7 +48,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/api/rfid-scan', [WorkflowController::class, 'apiRfidScan'])->name('api.rfid.scan');
     });
 
-    // 3. Client Database Module
+    // Clients
     Route::prefix('clients')->name('clients.')->middleware('module:clients')->group(function () {
         Route::get('/', [CustomerController::class, 'index'])->name('index');
         Route::post('/', [CustomerController::class, 'store'])->name('store');
@@ -58,7 +57,7 @@ Route::middleware('auth')->group(function () {
         Route::delete('/{customer}', [CustomerController::class, 'destroy'])->name('destroy');
     });
 
-    // 4. Packages & Add-ons Module
+    // Packages & Add-ons
     Route::prefix('packages')->name('packages.')->middleware('module:packages')->group(function () {
         Route::get('/', [PackageController::class, 'index'])->name('index');
         Route::post('/', [PackageController::class, 'storePackage'])->name('store');
@@ -67,18 +66,18 @@ Route::middleware('auth')->group(function () {
         Route::put('/addons/{addon}', [PackageController::class, 'updateAddon'])->name('addons.update');
     });
 
-    // 5. Transaction History & Thermal Receipts
+    // Transactions
     Route::prefix('transactions')->name('transactions.')->middleware('module:transactions')->group(function () {
         Route::get('/', [TransactionController::class, 'index'])->name('index');
         Route::get('/{transaction}', [TransactionController::class, 'show'])->name('show');
         Route::get('/{transaction}/receipt', [TransactionController::class, 'receipt'])->name('receipt');
     });
 
-    // Direct download print files
+    // Print Downloads
     Route::get('/prints/download/{filename}', [TransactionController::class, 'downloadPrint'])
         ->name('prints.download');
 
-    // 6. User & Role Management
+    // Users & Roles
     Route::prefix('admin/users')->name('admin.users.')->middleware('module:users_roles')->group(function () {
         Route::get('/', [UserController::class, 'index'])->name('index');
         Route::post('/', [UserController::class, 'store'])->name('store');
@@ -86,13 +85,13 @@ Route::middleware('auth')->group(function () {
         Route::post('/{user}/toggle', [UserController::class, 'toggleStatus'])->name('toggle');
     });
 
-    // 7. Settings Module
+    // Settings
     Route::prefix('settings')->name('settings.')->group(function () {
         Route::get('/', [SettingController::class, 'index'])->name('index');
         Route::post('/', [SettingController::class, 'update'])->name('update');
     });
 
-    // 8. Blockchain Sales Audit Trail & Access Log
+    // Blockchain Audit
     Route::prefix('admin/blockchain-audit')->name('admin.audit.')->group(function () {
         Route::get('/', [AuditLogController::class, 'index'])->name('index');
         Route::post('/verify', [AuditLogController::class, 'verify'])->name('verify');

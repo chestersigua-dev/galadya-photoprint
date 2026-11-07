@@ -13,7 +13,7 @@ class RoleAndPermissionSeeder extends Seeder
      */
     public function run(): void
     {
-        // 1. Define Modules & Permissions
+        // System modules and permissions
         $modules = [
             'dashboard' => [
                 ['name' => 'View Dashboard', 'slug' => 'dashboard.view'],
@@ -60,7 +60,7 @@ class RoleAndPermissionSeeder extends Seeder
             }
         }
 
-        // 2. Define Roles
+        // Default roles
         $superAdmin = Role::firstOrCreate(
             ['slug' => 'super_admin'],
             [
@@ -85,22 +85,20 @@ class RoleAndPermissionSeeder extends Seeder
             ]
         );
 
-        // 3. Assign Permissions
-        // Super Admin gets all permissions
+        // Role permissions assignment
         $superAdmin->permissions()->sync(collect($permissionModels)->pluck('id'));
 
         // Store Manager permissions
         $managerPerms = collect($permissionModels)->filter(function ($perm) {
-            return !in_array($perm->slug, ['users.manage'], true);
+            return ! in_array($perm->slug, ['users.manage'], true);
         })->pluck('id');
         $storeManager->permissions()->sync($managerPerms);
 
         // Photographer permissions: dashboard, clients (view/create), import_print, transactions (view/create/receipt)
         $photographerPerms = collect($permissionModels)->filter(function ($perm) {
             return in_array($perm->module, ['dashboard', 'clients', 'import_print', 'transactions'], true)
-                && !in_array($perm->slug, ['clients.delete'], true);
+                && ! in_array($perm->slug, ['clients.delete'], true);
         })->pluck('id');
         $photographer->permissions()->sync($photographerPerms);
     }
 }
-

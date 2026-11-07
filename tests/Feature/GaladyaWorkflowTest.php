@@ -85,7 +85,7 @@ class GaladyaWorkflowTest extends TestCase
             $samplePhotos[] = storage_path("app/public/raw_uploads/sample_shot_{$i}.jpg");
         }
 
-        // Test Output A: Dual photostrip composite
+        // Dual photostrip composite
         $stripOutput = storage_path('app/public/prints/test_dual_strip.jpg');
         $stripRes = $layoutService->generateDualPhotostrip($samplePhotos, $stripOutput, [
             'code' => 'GP-TEST-0001',
@@ -100,7 +100,7 @@ class GaladyaWorkflowTest extends TestCase
         $this->assertEquals(1200, $stripW, 'Photostrip composite width must be exactly 1200 px at 300 DPI');
         $this->assertEquals(1800, $stripH, 'Photostrip composite height must be exactly 1800 px at 300 DPI');
 
-        // Test Output B: Solo Favorite 4R Print
+        // Solo favorite 4R portrait
         $soloOutput = storage_path('app/public/prints/test_solo_favorite.jpg');
         $soloRes = $layoutService->generateSoloFavorite4R($samplePhotos[0], $soloOutput, [
             'code' => 'GP-TEST-0001',
@@ -314,7 +314,7 @@ class GaladyaWorkflowTest extends TestCase
                     'last_name' => 'delos Santos',
                     'full_name' => 'Clara delos Santos',
                     'contact_number' => '09181234567',
-                ]
+                ],
             ]);
 
         $this->assertDatabaseHas('customers', [
@@ -368,21 +368,21 @@ class GaladyaWorkflowTest extends TestCase
 
         $html = $response->getContent();
 
-        // 1. Ensure no nested x-data creates broken child scope on search dropdown
+        // Dropdown scope isolation
         $this->assertStringNotContainsString('x-data="{ openDropdown: false }"', $html);
 
-        // 2. Ensure modal trigger has stop propagation and openAddClientModal
+        // Modal triggers
         $this->assertStringContainsString('openAddClientModal()', $html);
 
-        // 3. Ensure packages use selectPackage and isPackageSelected
+        // Package selectors
         $this->assertStringContainsString('selectPackage(pkg.id)', $html);
         $this->assertStringContainsString('isPackageSelected(pkg.id)', $html);
 
-        // 4. Ensure add-ons use toggleAddon and immutable reactivity
+        // Addon toggles
         $this->assertStringContainsString('toggleAddon(addon.id)', $html);
         $this->assertStringContainsString('isAddonSelected(addon.id)', $html);
 
-        // 5. Ensure RFID Discount & Loyalty Card Station exists in the template
+        // RFID scanner integration
         $this->assertStringContainsString('RFID Discount & Loyalty Card', $html);
         $this->assertStringContainsString('scanRfidCard()', $html);
     }
@@ -415,7 +415,7 @@ class GaladyaWorkflowTest extends TestCase
             'contact_number' => '09179998888',
         ]);
 
-        // 1. Scan registered RFID
+        // Existing registered card lookup
         $response = $this->actingAs($user)->postJson(route('workflow.api.rfid.scan'), [
             'rfid' => 'GP-RFID-998877',
             'customer_id' => $customer->id,
@@ -431,10 +431,10 @@ class GaladyaWorkflowTest extends TestCase
                     'rfid' => 'GP-RFID-998877',
                     'points' => 4,
                     'matches_current_customer' => true,
-                ]
+                ],
             ]);
 
-        // 2. Scan unassigned RFID with an active customer in session
+        // Unassigned card detection with active customer session
         $unassignedRes = $this->actingAs($user)->postJson(route('workflow.api.rfid.scan'), [
             'rfid' => 'GP-RFID-NEWCARD',
             'customer_id' => $customer->id,
@@ -448,7 +448,7 @@ class GaladyaWorkflowTest extends TestCase
                     'id' => $customer->id,
                     'rfid' => 'GP-RFID-NEWCARD',
                     'is_new_registration' => true,
-                ]
+                ],
             ]);
     }
 
@@ -467,7 +467,7 @@ class GaladyaWorkflowTest extends TestCase
 
         $previewRelPath = 'previews/test_rfid_checkout.jpg';
         $fullPath = storage_path("app/public/{$previewRelPath}");
-        if (!file_exists(dirname($fullPath))) {
+        if (! file_exists(dirname($fullPath))) {
             mkdir(dirname($fullPath), 0755, true);
         }
         $img = imagecreatetruecolor(800, 1200);
@@ -489,8 +489,8 @@ class GaladyaWorkflowTest extends TestCase
                     'storage_path' => $previewRelPath,
                     'is_starred' => true,
                     'is_favorite' => true,
-                ]
-            ]
+                ],
+            ],
         ];
 
         $response = $this->actingAs($user)->postJson(route('workflow.finalize'), $payload);
@@ -502,7 +502,7 @@ class GaladyaWorkflowTest extends TestCase
                     'rfid_scanned' => true,
                     'points_earned' => 1,
                     'total_points' => 8,
-                ]
+                ],
             ]);
 
         // Verify customer accumulated +1 point

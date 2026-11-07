@@ -50,9 +50,7 @@
         </div>
     </div>
 
-    <!-- ========================================================================= -->
-    <!-- STEP 1: SELECT CLIENT & PACKAGE -->
-    <!-- ========================================================================= -->
+    <!-- Step 1: Client & Package Selection -->
     <div x-show="currentStep === 1" x-transition.opacity.duration.300ms class="space-y-6">
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
@@ -136,7 +134,7 @@
                                 </div>
                             </template>
 
-                            <!-- Empty Search / Not Found State with Quick Register Prompt -->
+                            <!-- Empty Search / Not Found State with Quick Register Option -->
                             <div x-show="!isSearchingClients && filteredClients.length === 0 && clientQuery && clientQuery.trim().length > 0" class="p-4 text-center">
                                 <div class="w-8 h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mx-auto mb-2">
                                     <i data-lucide="user-x" class="w-4 h-4"></i>
@@ -328,12 +326,10 @@
         </div>
     </div>
 
-    <!-- ========================================================================= -->
-    <!-- STEP 2 & STEP 3: FILE INGESTION & INTERACTIVE PHOTO SELECTION -->
-    <!-- ========================================================================= -->
+    <!-- Step 2 & 3: File Ingestion & Photo Selection -->
     <div x-show="currentStep === 2 || currentStep === 3" x-transition.opacity.duration.300ms class="space-y-6">
         
-        <!-- Sticky Top Bar Monitor (Requirement 3.D Step 3) -->
+        <!-- Selection Status Bar -->
         <div class="sticky top-16 z-30 bg-[#1c053a]/95 backdrop-blur-md text-white px-5 py-3.5 rounded-2xl shadow-xl border border-purple-900/80 flex flex-wrap items-center justify-between gap-4">
             <div class="flex items-center gap-4">
                 <!-- Selected Count Badge with Color Switch Rule -->
@@ -442,9 +438,7 @@
             </div>
         </div>
 
-        <!-- ========================================================================= -->
-        <!-- DUAL PHOTOSTRIP INGEST SPLIT BOARD (First 5 Left, Second 5 Right) -->
-        <!-- ========================================================================= -->
+        <!-- Dual Photostrip Layout Board -->
         <div class="bg-white p-5 rounded-2xl border border-purple-100 shadow-xs space-y-4">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-purple-50">
                 <div>
@@ -801,16 +795,14 @@
         </div>
     </div>
 
-    <!-- ========================================================================= -->
-    <!-- STEP 4 & STEP 5: 4R TEMPLATE PREVIEW & TRANSACTION FINALIZATION -->
-    <!-- ========================================================================= -->
+    <!-- Step 4 & 5: Print Preview & Finalization -->
     <div x-show="currentStep === 4" x-transition.opacity.duration.300ms class="space-y-6">
         <div class="bg-white p-6 rounded-2xl border border-purple-100 shadow-xs">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-purple-100">
                 <div>
                     <h2 class="text-base font-black text-purple-950 flex items-center gap-2">
                         <i data-lucide="printer" class="w-4 h-4 text-purple-600"></i>
-                        <span>Step 4: Automated 4R Print Template Verification</span>
+                        <span>Step 4: 4R Print Template Verification</span>
                     </h2>
                     <p class="text-xs text-slate-500">Verify the high-resolution 4R dual-strip and solo favorite layouts before final POS commit.</p>
                 </div>
@@ -828,10 +820,10 @@
             <!-- Previews Comparison Grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 
-                <!-- Output A: 4R Photostrip Composite Preview -->
+                <!-- 4R Dual Photostrip Preview -->
                 <div class="bg-purple-50/30 p-5 rounded-2xl border border-purple-100 shadow-xs">
                     <div class="flex items-center justify-between mb-3">
-                        <span class="text-xs font-black text-purple-950">Output A: 4R Dual Photostrip (10 Photos)</span>
+                        <span class="text-xs font-black text-purple-950">Dual Photostrip (10 Photos)</span>
                         <span class="text-[10px] font-mono bg-purple-100 text-purple-800 px-2 py-0.5 rounded font-bold">1200 x 1800 px</span>
                     </div>
                     <p class="text-[11px] text-slate-500 mb-3">Two photostrip columns side-by-side (5 photos per column) with centered Galadya Studio footer logo.</p>
@@ -896,13 +888,13 @@
                     </div>
                 </div>
 
-                <!-- Output B: Solo Favorite 4R Print Preview -->
+                <!-- Solo 4R Print Preview -->
                 <div class="bg-purple-50/30 p-5 rounded-2xl border border-purple-100 shadow-xs">
                     <div class="flex items-center justify-between mb-3">
-                        <span class="text-xs font-black text-purple-950">Output B: Solo Favorite 4R Print</span>
+                        <span class="text-xs font-black text-purple-950">Solo 4R Portrait</span>
                         <span class="text-[10px] font-mono bg-purple-100 text-purple-800 px-2 py-0.5 rounded font-bold">1200 x 1800 px</span>
                     </div>
-                    <p class="text-[11px] text-slate-500 mb-3">Selected favorite scaled and centered with Galadya Studio logo placed at bottom-left corner (3% canvas area).</p>
+                    <p class="text-[11px] text-slate-500 mb-3">Selected favorite photo scaled and centered with studio branding at bottom-left corner.</p>
 
                     <!-- Mock Solo Canvas -->
                     <div class="bg-white border-2 border-purple-200 rounded-2xl p-2.5 shadow-md aspect-[2/3] max-w-sm mx-auto relative flex items-center justify-center overflow-hidden">
@@ -1180,9 +1172,7 @@
         </div>
     </div>
 
-    <!-- ========================================================================= -->
-    <!-- FINALIZATION COMPLETION MODAL & POS RECEIPT DIALOG (Requirement 3.D Step 5) -->
-    <!-- ========================================================================= -->
+    <!-- Order Confirmation Modal -->
     <div 
         x-show="showSuccessModal" 
         x-transition.opacity 
@@ -1190,7 +1180,7 @@
         style="display: none;"
     >
         <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-purple-200 text-center relative overflow-hidden">
-            <!-- Authentic Studio Logo Branding in Modal -->
+            <!-- Studio Logo -->
             <div class="inline-flex items-center justify-center p-2.5 rounded-2xl bg-white shadow-md border border-purple-100 mx-auto mb-3">
                 <img src="{{ asset('images/logo 1.png') }}" alt="Galadya Studio" class="h-10 w-auto object-contain">
             </div>
@@ -1250,7 +1240,7 @@
                     class="w-full py-3 px-4 rounded-xl bg-[#1c053a] hover:bg-[#2c0859] text-white font-bold text-xs flex items-center justify-center gap-2 transition shadow-md border border-purple-900"
                 >
                     <i data-lucide="download" class="w-4 h-4 text-yellow-300"></i>
-                    <span>Download Output A: 4R Dual Photostrip JPEG</span>
+                    <span>Download Dual Photostrip (4R)</span>
                 </a>
 
                 <!-- Download Solo 4R Print -->
@@ -1261,7 +1251,7 @@
                     class="w-full py-3 px-4 rounded-xl bg-[#1c053a] hover:bg-[#2c0859] text-white font-bold text-xs flex items-center justify-center gap-2 transition shadow-md border border-purple-900"
                 >
                     <i data-lucide="download" class="w-4 h-4 text-pink-400"></i>
-                    <span>Download Output B: Solo Favorite 4R JPEG</span>
+                    <span>Download Solo 4R Print</span>
                 </a>
 
                 <!-- Open Thermal Receipt Trigger -->
@@ -1357,7 +1347,7 @@ function workflowWizard(config) {
         addons: config.initialAddons || [],
         customers: config.initialCustomers || [],
         
-        // Step 1 State
+        // Client & package state
         clientQuery: '',
         filteredClients: config.initialCustomers || [],
         selectedCustomer: null,
@@ -1372,7 +1362,7 @@ function workflowWizard(config) {
         searchDebounceTimer: null,
         newClient: { first_name: '', last_name: '', rfid: '', contact_number: '', email: '', notes: '' },
 
-        // RFID Loyalty & Discount Card State (1 point per scan)
+        // RFID loyalty state
         rfidInput: '',
         rfidCardScanned: false,
         rfidCustomerName: '',
@@ -1381,12 +1371,12 @@ function workflowWizard(config) {
         rfidScanSuccess: false,
         isScanningRfid: false,
 
-        // Step 2 & 3 State (Photos)
+        // Photo gallery state
         photos: [],
         isUploading: false,
         uploadProgress: 0,
 
-        // Step 4 & 5 State (Checkout & Finalization)
+        // Checkout & finalization state
         paymentMethod: 'cash',
         discountAmount: 0,
         isSubmitting: false,
@@ -1708,7 +1698,7 @@ function workflowWizard(config) {
             });
         },
 
-        // Photo Selection Logic (Requirement 3.D Step 3)
+        // Photo Selection and Flags
         get starredCount() {
             return this.photos.filter(p => p.is_starred).length;
         },
@@ -1978,7 +1968,7 @@ function workflowWizard(config) {
             this.discountAmount = Number(amount);
         },
 
-        // Step 5: Finalize & Generate Templates
+        // Finalize transaction and trigger print generation
         finalizeTransaction() {
             this.isSubmitting = true;
 
